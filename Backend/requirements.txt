@@ -1,0 +1,36 @@
+# ── Core framework ───────────────────────────────────────────────────────────
+flask>=3.0.0
+flask-cors>=4.0.0
+python-dotenv>=1.0.0
+
+# ── LangChain / LangGraph ────────────────────────────────────────────────────
+langchain>=0.2.0
+langchain-text-splitters>=0.2.0
+langchain-openai>=0.1.0
+langchain-ollama>=0.1.0
+langchain-community>=0.2.0
+langgraph>=0.1.0
+
+# ── Vector store ─────────────────────────────────────────────────────────────
+chromadb>=0.5.0
+
+# ── Embeddings & Reranking ───────────────────────────────────────────────────
+sentence-transformers>=3.0.0
+
+# ── Sparse retrieval ─────────────────────────────────────────────────────────
+rank-bm25>=0.2.2
+
+# ── Graph ─────────────────────────────────────────────────────────────────────
+networkx>=3.3
+
+# ── Document loaders ─────────────────────────────────────────────────────────
+pypdf>=4.0.0
+docx2txt>=0.8
+unstructured>=0.14.0
+
+# ── Web search (optional — for use_external=True) ────────────────────────────
+duckduckgo-search>=6.0.0
+
+# ── Utilities ────────────────────────────────────────────────────────────────
+numpy>=1.26.0
+requests>=2.31.0

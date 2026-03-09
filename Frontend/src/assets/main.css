@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #0f172a; }
+  ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #475569; }
+}
+
+@layer components {
+  .card {
+    @apply bg-slate-900 border border-slate-800 rounded-xl p-4;
+  }
+  .btn-primary {
+    @apply bg-brand-600 hover:bg-brand-500 disabled:opacity-50 disabled:cursor-not-allowed
+           text-white font-semibold px-5 py-2.5 rounded-lg transition-colors duration-150;
+  }
+  .btn-secondary {
+    @apply bg-slate-800 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed
+           text-slate-200 font-medium px-4 py-2 rounded-lg transition-colors duration-150;
+  }
+  .prose-rag {
+    @apply text-slate-200 leading-relaxed;
+  }
+  .prose-rag p { @apply mb-3; }
+  .prose-rag strong { @apply text-white font-semibold; }
+  .prose-rag h1,h2,h3 { @apply text-white font-bold mt-4 mb-2; }
+  .prose-rag ul { @apply list-disc list-inside mb-3 space-y-1; }
+  .prose-rag ol { @apply list-decimal list-inside mb-3 space-y-1; }
+  .prose-rag code { @apply bg-slate-800 text-brand-400 px-1.5 py-0.5 rounded text-sm; }
+  .prose-rag pre { @apply bg-slate-800 p-4 rounded-lg overflow-x-auto mb-3; }
+  .prose-rag pre code { @apply bg-transparent p-0; }
+  .prose-rag blockquote { @apply border-l-4 border-brand-600 pl-4 italic text-slate-400; }
+}
