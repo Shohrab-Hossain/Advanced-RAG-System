@@ -46,6 +46,7 @@ def reasoning_node(state: RAGState) -> dict:
     compressed_context = state.get("compressed_context", "")
     context_docs = state.get("context", [])
     provider = state.get("provider", "openai")
+    ollama_model = state.get("ollama_model")
 
     emit(session_id, "stage_start", {
         "stage": "reasoning",
@@ -62,13 +63,15 @@ def reasoning_node(state: RAGState) -> dict:
             "url": meta.get("url", ""),
             "page": meta.get("page", ""),
             "rerank_score": round(doc.get("rerank_score", doc.get("score", 0.0)), 4),
+            # include both preview and full content for frontend expansion
             "content_preview": doc["content"][:250],
+            "content": doc["content"],
         })
 
     context_text = compressed_context or "\n\n".join(d["content"] for d in context_docs)
 
     if not context_text.strip():
-        llm = get_llm(provider)
+        llm = get_llm(provider, model=ollama_model)
         result = llm.invoke(
             f"Answer this question directly (no documents available): {query}"
         )
@@ -80,12 +83,17 @@ def reasoning_node(state: RAGState) -> dict:
         return {"answer": result.content, "sources": []}
 
     try:
-        llm = get_llm(provider, json_mode=True)
+        llm = get_llm(provider, json_mode=True, model=ollama_model)
         raw = (_REASONING_PROMPT | llm).invoke({"query": query, "context": context_text})
         result = safe_json_parse(raw.content)
 
         answer = result.get("answer", "No answer generated.")
         confidence = float(result.get("confidence", 0.5))
+
+        # Filter to only sources actually cited in the answer.
+        # If the LLM cited nothing (answered from training knowledge), return no sources.
+        cited_indices = set(result.get("cited_sources", []))
+        cited_sources = [s for s in sources if s["index"] in cited_indices]
 
         emit(session_id, "stage_complete", {
             "stage": "reasoning",
@@ -94,12 +102,12 @@ def reasoning_node(state: RAGState) -> dict:
             "key_facts": result.get("key_facts", []),
             "message": f"Answer generated ({confidence:.0%} confidence)",
         })
-        return {"answer": answer, "sources": sources}
+        return {"answer": answer, "sources": cited_sources}
 
     except Exception as e:
         emit(session_id, "stage_error", {"stage": "reasoning", "error": str(e)})
         try:
-            llm = get_llm(provider)
+            llm = get_llm(provider, model=ollama_model)
             prompt = f"Context:\n{context_text[:3000]}\n\nQuestion: {query}\n\nAnswer:"
             result = llm.invoke(prompt)
             return {"answer": result.content, "sources": sources}

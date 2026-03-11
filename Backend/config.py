@@ -17,8 +17,8 @@ class Config:
     LLM_MODEL: str = os.getenv("LLM_MODEL", "gpt-4o-mini")
 
     # ── LLM — Ollama (local) ─────────────────────────────────────────────────
-    OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-    OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "llama3.2:latest")
+    OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL")
+    OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL")
 
     # ── Default provider ("openai" | "ollama") ───────────────────────────────
     DEFAULT_PROVIDER: str = os.getenv("DEFAULT_PROVIDER", "openai")
@@ -38,10 +38,24 @@ class Config:
     CHUNK_OVERLAP: int = int(os.getenv("CHUNK_OVERLAP", "50"))
 
     # ── Storage paths ─────────────────────────────────────────────────────────
-    UPLOAD_FOLDER: str = os.getenv("UPLOAD_FOLDER", "./data/uploads")
-    CHROMA_PATH: str = os.getenv("CHROMA_PATH", "./data/chroma_db")
-    GRAPH_PATH: str = os.getenv("GRAPH_PATH", "./data/graph_store.pkl")
-    BM25_PATH: str = os.getenv("BM25_PATH", "./data/bm25_store.pkl")
+    # base roots (user may override any of these independently)
+    DATA_ROOT: str = os.getenv("DATA_ROOT", "./data")
+    UPLOAD_FOLDER: str = os.getenv("UPLOAD_FOLDER", os.path.join(DATA_ROOT, "uploads"))
+    DATABASE_ROOT: str = os.getenv("DATABASE_ROOT", os.path.join(DATA_ROOT, "databases"))
+
+    VECTOR_ROOT: str = os.path.join(DATABASE_ROOT, "vector_db")
+    GRAPH_ROOT: str = os.path.join(DATABASE_ROOT, "graph_db")
+    KEYWORD_ROOT: str = os.path.join(DATABASE_ROOT, "keyword_db")
+
+    # legacy variables still supported for backward compatibility
+    CHROMA_PATH: str = os.getenv("CHROMA_PATH", os.path.join(VECTOR_ROOT, "chroma_db"))
+    FAISS_PATH: str = os.getenv("FAISS_PATH", os.path.join(VECTOR_ROOT, "faiss_db"))
+    # now each store lives in its own subdirectory for clarity
+    GRAPH_PATH: str = os.getenv("GRAPH_PATH", os.path.join(GRAPH_ROOT, "graph_store", "graph_store.pkl"))
+    BM25_PATH: str = os.getenv("BM25_PATH", os.path.join(KEYWORD_ROOT, "bm25_store", "bm25_store.pkl"))
+
+    # vector store backend can be 'chroma' or 'faiss'
+    VECTOR_BACKEND: str = os.getenv("VECTOR_BACKEND", "chroma").lower()
 
     # ── Flask / CORS ──────────────────────────────────────────────────────────
     MAX_CONTENT_LENGTH: int = 50 * 1024 * 1024   # 50 MB

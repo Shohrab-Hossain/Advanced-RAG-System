@@ -19,11 +19,21 @@ _PLANNER_PROMPT = ChatPromptTemplate.from_messages([
     ("system", """You are a Self-RAG planning agent.
 Analyze the user query and output a JSON decision object.
 
-Rules:
-- retrieve=true  → query requires domain knowledge / documents
-- retrieve=false → simple math, greetings, pure coding questions
-- use_external=true → query involves recent events, live data, or breaking news
-- query_type: one of "factual", "analytical", "conversational"
+Rules for `retrieve`:
+- true  → question is likely about user-uploaded domain documents (company reports, research papers, personal files, etc.)
+- false → general world knowledge (history, science, geography, famous people, events), math, greetings, coding questions
+
+Rules for `use_external`:
+- true  → question involves recent events (last 1-2 years), live data, current news, or breaking information
+- false → everything else (historical facts, stable knowledge, document-based questions)
+
+Examples:
+- "Who was the first person on the moon?" → retrieve=false, use_external=false (well-known historical fact)
+- "What does the attached report say about revenue?" → retrieve=true, use_external=false (domain document)
+- "What happened in the stock market today?" → retrieve=false, use_external=true (live data)
+- "Summarize the uploaded PDF" → retrieve=true, use_external=false
+
+query_type: one of "factual", "analytical", "conversational"
 
 Respond ONLY with valid JSON — no markdown, no extra text:
 {{
@@ -40,6 +50,7 @@ def planner_node(state: RAGState) -> dict:
     session_id = state.get("session_id")
     query = state["query"]
     provider = state.get("provider", "openai")
+    ollama_model = state.get("ollama_model")
 
     emit(session_id, "stage_start", {
         "stage": "planner",
@@ -47,7 +58,7 @@ def planner_node(state: RAGState) -> dict:
     })
 
     try:
-        llm = get_llm(provider, json_mode=True)
+        llm = get_llm(provider, json_mode=True, model=ollama_model)
         raw = (_PLANNER_PROMPT | llm).invoke({"query": query})
         result: dict = safe_json_parse(raw.content)
 

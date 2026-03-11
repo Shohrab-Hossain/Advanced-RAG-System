@@ -22,6 +22,7 @@ class RAGState(TypedDict):
     query: str
     session_id: Optional[str]          # Used to route SSE events
     provider: str                      # "openai" | "ollama"
+    ollama_model: Optional[str]        # User-selected Ollama model (overrides env default)
 
     # ── Planner outputs ──────────────────────────────────────────────────────
     retrieve: bool                     # Should we hit the knowledge base?

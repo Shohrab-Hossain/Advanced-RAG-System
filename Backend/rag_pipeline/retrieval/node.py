@@ -14,9 +14,10 @@ Emits: stage_start → retrieval_result (or stage_skip when retrieve=False)
 import os
 from ..state import RAGState
 from ..core.events import emit
-from .vector import vector_store
-from .bm25 import bm25_store
-from .graph import graph_store
+from .vector.vector_store import vector_store
+# keyword/BM25 retrieval is now under the keyword subpackage
+from .keyword.bm25_store import bm25_store
+from .graph.graph_store import graph_store
 
 TOP_K = int(os.getenv("RETRIEVAL_TOP_K", "10"))
 

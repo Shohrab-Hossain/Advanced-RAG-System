@@ -10,7 +10,15 @@ import os
 import threading
 from datetime import datetime, timezone
 
-_REGISTRY_PATH = os.getenv("KB_REGISTRY_PATH", "./data/kb_registry.json")
+from config import Config
+
+_REGISTRY_PATH = os.getenv("KB_REGISTRY_PATH", os.path.join(Config.DATABASE_ROOT, "kb_registry.json"))
+
+# migrate legacy registry location
+if os.path.exists("./data/kb_registry.json") and not os.path.exists(_REGISTRY_PATH):
+    os.makedirs(os.path.dirname(_REGISTRY_PATH), exist_ok=True)
+    import shutil
+    shutil.move("./data/kb_registry.json", _REGISTRY_PATH)
 _lock = threading.Lock()
 
 

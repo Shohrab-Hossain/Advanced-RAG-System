@@ -13,6 +13,8 @@ langgraph>=0.1.0
 
 # ── Vector store ─────────────────────────────────────────────────────────────
 chromadb>=0.5.0
+# optional alternative backend (only needed if you set VECTOR_BACKEND=faiss)
+faiss-cpu>=1.7.4
 
 # ── Embeddings & Reranking ───────────────────────────────────────────────────
 sentence-transformers>=3.0.0
@@ -29,7 +31,7 @@ docx2txt>=0.8
 unstructured>=0.14.0
 
 # ── Web search (optional — for use_external=True) ────────────────────────────
-duckduckgo-search>=6.0.0
+ddgs>=7.0.0
 
 # ── Utilities ────────────────────────────────────────────────────────────────
 numpy>=1.26.0

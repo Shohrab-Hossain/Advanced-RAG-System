@@ -39,6 +39,7 @@ def compressor_node(state: RAGState) -> dict:
     query = state["query"]
     context = state.get("context", [])
     provider = state.get("provider", "openai")
+    ollama_model = state.get("ollama_model")
 
     emit(session_id, "stage_start", {
         "stage": "compressor",
@@ -71,7 +72,7 @@ def compressor_node(state: RAGState) -> dict:
         return {"compressed_context": full_text}
 
     try:
-        llm = get_llm(provider)
+        llm = get_llm(provider, model=ollama_model)
         chain = _COMPRESS_PROMPT | llm
         result = chain.invoke({
             "query": query,

@@ -1,0 +1,20 @@
+{
+  "c18535e3a44d6e2997ea933262cec2aa": {
+    "id": "c18535e3a44d6e2997ea933262cec2aa",
+    "name": "transcipt_01.txt",
+    "uploaded_at": "2026-03-10T16:01:36.411348+00:00",
+    "chunks": 103,
+    "vectors": 103,
+    "entities": 106,
+    "edges": 423
+  },
+  "9540284f3164bfc15d8a210700e086f0": {
+    "id": "9540284f3164bfc15d8a210700e086f0",
+    "name": "transcript_02.txt",
+    "uploaded_at": "2026-03-10T16:21:52.973289+00:00",
+    "chunks": 207,
+    "vectors": 207,
+    "entities": 127,
+    "edges": 1471
+  }
+}

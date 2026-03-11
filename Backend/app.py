@@ -24,9 +24,9 @@ from config import Config
 from rag_pipeline.graph import rag_graph
 from rag_pipeline.core.events import create_session, close_session, format_sse
 from rag_pipeline.encoding.llm import check_ollama
-from rag_pipeline.retrieval.vector import vector_store
-from rag_pipeline.retrieval.bm25 import bm25_store
-from rag_pipeline.retrieval.graph import graph_store
+from rag_pipeline.retrieval.vector.vector_store import vector_store
+from rag_pipeline.retrieval.keyword.bm25_store import bm25_store
+from rag_pipeline.retrieval.graph.graph_store import graph_store
 from rag_pipeline.ingestion.loader import load_file, generate_chunk_ids
 from rag_pipeline.ingestion import registry as kb_registry
 
@@ -76,6 +76,9 @@ def create_app() -> Flask:
         if provider not in ("openai", "ollama"):
             return jsonify({"error": "provider must be 'openai' or 'ollama'"}), 400
 
+        # Optional model override (only meaningful for Ollama; ignored for OpenAI)
+        ollama_model = body.get("model") or None
+
         session_id = str(uuid.uuid4())
         _, event_queue = create_session(session_id)
 
@@ -83,6 +86,7 @@ def create_app() -> Flask:
             "query": body["query"].strip(),
             "session_id": session_id,
             "provider": provider,
+            "ollama_model": ollama_model,
             # Planner will overwrite these:
             "retrieve": True,
             "use_external": False,
@@ -259,6 +263,12 @@ def create_app() -> Flask:
                     "label": "OpenAI",
                     "model": Config.LLM_MODEL,
                     "available": bool(Config.OPENAI_API_KEY),
+                    "models": [
+                        "gpt-4o",
+                        "gpt-4o-mini",
+                        "gpt-4-turbo",
+                        "gpt-3.5-turbo",
+                    ],
                 },
                 {
                     "id": "ollama",

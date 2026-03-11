@@ -17,7 +17,12 @@ import warnings
 
 # Suppress noisy but harmless model-loading messages
 logging.getLogger("sentence_transformers").setLevel(logging.ERROR)
+logging.getLogger("huggingface_hub").setLevel(logging.ERROR)
 warnings.filterwarnings("ignore", message=".*position_ids.*")
+warnings.filterwarnings("ignore", message="unclosed", category=ResourceWarning)
+warnings.filterwarnings("ignore", message=".*huggingface_hub.*token.*")
+warnings.filterwarnings("ignore", message=".*unauthenticated.*")
+warnings.filterwarnings("ignore", message=".*renamed to.*ddgs.*", category=RuntimeWarning)
 
 from app import app, Config
 

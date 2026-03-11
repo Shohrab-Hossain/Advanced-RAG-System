@@ -5,6 +5,12 @@ each emitting real-time SSE events to the browser.
 
 ## Package Layout
 
+> **Note:** earlier versions exposed `bm25.py`, `vector.py` and `graph.py`
+> directly under `rag_pipeline/retrieval`. Those files were simple shims and have
+> now been removed; import from the appropriate subpackage (e.g. `
+> rag_pipeline.retrieval.vector.vector_store`).
+
+
 ```
 rag_pipeline/
 ├── graph.py          LangGraph workflow — wires all nodes together
@@ -22,9 +28,15 @@ rag_pipeline/
 │   └── registry.py   Knowledge-base registry (JSON persistence)
 │
 ├── retrieval/        Finding relevant documents
-│   ├── vector.py     ChromaDB dense retrieval (cosine similarity)
-│   ├── bm25.py       BM25 sparse retrieval (keyword matching)
-│   ├── graph.py      GraphRAG entity traversal (NetworkX)
+│   ├── vector/        Dense vector retrieval
+│   │   ├── __init__.py  exports `vector_store` (Chroma/FAISS)
+│   │   └── vector_store.py     implementation (Chroma + optional FAISS)
+│   ├── keyword/       Sparse keyword retrieval (BM25)
+│   │   ├── __init__.py  exports `bm25_store`
+│   │   └── store.py     BM25 implementation
+│   ├── graph/         GraphRAG retrieval
+│   │   ├── __init__.py  exports `graph_store`
+│   │   └── store.py     NetworkX-based graph logic
 │   ├── node.py       Hybrid retrieval pipeline node
 │   └── web_node.py   Web search node (DuckDuckGo)
 │

@@ -16,35 +16,52 @@ import json
 import os
 import re
 
+# Cache LLM instances — avoids creating a new httpx client on every pipeline node call.
+# Key: (provider, temperature, json_mode). Env vars are fixed at startup.
+_llm_cache: dict = {}
 
-def get_llm(provider: str = "openai", temperature: float = 0, json_mode: bool = False):
+
+def get_llm(provider: str = "openai", temperature: float = 0, json_mode: bool = False,
+            model: str | None = None):
     """
     Return a LangChain BaseChatModel for the given provider.
 
     json_mode=True:
       - OpenAI: no change needed (JsonOutputParser handles it)
       - Ollama: passes format="json" to constrain output to valid JSON
+
+    model: optional override for the model name (e.g. a user-selected Ollama model).
+           Falls back to the env-var default if not supplied.
+
+    Instances are cached to avoid creating a new HTTP client on every call.
     """
     provider = (provider or "openai").lower().strip()
+    cache_key = (provider, temperature, json_mode, model)
+
+    if cache_key in _llm_cache:
+        return _llm_cache[cache_key]
 
     if provider == "ollama":
         from langchain_ollama import ChatOllama
         kwargs = {}
         if json_mode:
             kwargs["format"] = "json"
-        return ChatOllama(
-            model=os.getenv("OLLAMA_MODEL", "llama3.2:latest"),
-            base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
+        llm = ChatOllama(
+            model=model or os.getenv("OLLAMA_MODEL"),
+            base_url=os.getenv("OLLAMA_BASE_URL"),
             temperature=temperature,
             **kwargs,
         )
+    else:
+        # Default: openai
+        from langchain_openai import ChatOpenAI
+        llm = ChatOpenAI(
+            model=model or os.getenv("LLM_MODEL", "gpt-4o-mini"),
+            temperature=temperature,
+        )
 
-    # Default: openai
-    from langchain_openai import ChatOpenAI
-    return ChatOpenAI(
-        model=os.getenv("LLM_MODEL", "gpt-4o-mini"),
-        temperature=temperature,
-    )
+    _llm_cache[cache_key] = llm
+    return llm
 
 
 def safe_json_parse(text: str) -> dict:

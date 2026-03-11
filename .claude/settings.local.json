@@ -10,7 +10,21 @@
       "Bash(for f in \"c:/A. SH-Home/Projects/RAG/Backend/rag_pipeline/ingestion/__init__.py\" \"c:/A. SH-Home/Projects/RAG/Backend/rag_pipeline/retrieval/__init__.py\" \"c:/A. SH-Home/Projects/RAG/Backend/rag_pipeline/ranking/__init__.py\" \"c:/A. SH-Home/Projects/RAG/Backend/rag_pipeline/generation/__init__.py\" \"c:/A. SH-Home/Projects/RAG/Backend/rag_pipeline/encoding/__init__.py\")",
       "Bash(do echo \"=== $f ===\")",
       "Read(//c/A. SH-Home/Projects/RAG/**)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(\"c:/A. SH-Home/Projects/RAG/Frontend/src/main.js\":*)",
+      "Bash(\"c:/A. SH-Home/Projects/RAG/Frontend/src/components/FileUpload.vue\":*)",
+      "Bash(\"c:/A. SH-Home/Projects/RAG/Frontend/src/components/PipelineTracker.vue\":*)",
+      "Bash(\"c:/A. SH-Home/Projects/RAG/Frontend/src/components/StatBadge.vue\":*)",
+      "Bash(npm install:*)",
+      "Bash(\"c:/A. SH-Home/Projects/RAG/Frontend/index.html\":*)",
+      "Bash(\"c:/A. SH-Home/Projects/RAG/Frontend/src/App.vue\":*)",
+      "Bash(\"c:/A. SH-Home/Projects/RAG/Frontend/src/views/HomeView.vue\":*)",
+      "Bash(grep -rn \"dark:text-zinc-7\\\\|dark:text-zinc-6\\\\|dark:placeholder-zinc-6\" 'c:/A. SH-Home/Projects/RAG/Frontend/src/' --include=*.vue)",
+      "Bash(python3 -c \"print\\(''hello''\\)\")",
+      "Bash(node -e \":*)",
+      "Bash(node -e \"require\\(''fs''\\).writeFileSync\\(''c:/A. SH-Home/Projects/RAG/Frontend/src/views/ChatView.vue'', ''test'', ''utf8''\\); console.log\\(''ok''\\)\")",
+      "Bash(node \"c:/A. SH-Home/Projects/RAG/Frontend/replace_theme.js\")",
+      "Bash(node replace_theme.js)"
     ]
   }
 }

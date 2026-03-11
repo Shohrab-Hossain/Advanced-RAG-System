@@ -34,7 +34,10 @@ def external_tools_node(state: RAGState) -> dict:
     })
 
     try:
-        from duckduckgo_search import DDGS
+        try:
+            from ddgs import DDGS          # new package name (>=7.0)
+        except ImportError:
+            from duckduckgo_search import DDGS  # legacy fallback
 
         web_docs = []
         with DDGS() as ddgs:

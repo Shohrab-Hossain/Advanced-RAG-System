@@ -57,6 +57,7 @@ def reflection_node(state: RAGState) -> dict:
     context_docs = state.get("context", [])
     retry_count = state.get("retry_count", 0)
     provider = state.get("provider", "openai")
+    ollama_model = state.get("ollama_model")
 
     emit(session_id, "stage_start", {
         "stage": "reflection",
@@ -78,7 +79,7 @@ def reflection_node(state: RAGState) -> dict:
     )
 
     try:
-        llm = get_llm(provider, json_mode=True)
+        llm = get_llm(provider, json_mode=True, model=ollama_model)
         raw = (_REFLECTION_PROMPT | llm).invoke({
             "query": query,
             "context": context_text[:4000],
