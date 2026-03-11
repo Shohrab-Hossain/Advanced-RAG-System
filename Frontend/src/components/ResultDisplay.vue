@@ -67,7 +67,7 @@
                       bg-stone-50 dark:bg-white/[0.04]
                       border-b border-stone-100 dark:border-white/[0.05]">
             <div class="flex items-center gap-2 min-w-0">
-              <span class="text-sm leading-none">{{ selectedSourceIcon }}</span>
+              <FileTypeIcon :filename="selectedSource.file_name" :type="selectedSource.source_type" :size="16" />
               <span class="text-xs font-medium text-stone-700 dark:text-slate-300 truncate">
                 {{ selectedSourceLabel }}
               </span>
@@ -95,16 +95,13 @@ import { computed, ref, watch } from 'vue'
 import { marked } from 'marked'
 import { useRagStore } from '../stores/rag'
 import SourceCard from './SourceCard.vue'
+import FileTypeIcon from './FileTypeIcon.vue'
 
 const store = useRagStore()
 const copied = ref(false)
 const sourcesOpen = ref(true)
 const selectedSource = ref(null)
 
-const sourceIcons = { vector: '🗃️', bm25: '📝', graph: '🕸️', web: '🌐' }
-
-const selectedSourceIcon = computed(() =>
-  selectedSource.value ? (sourceIcons[selectedSource.value.source_type] || '📄') : '')
 const selectedSourceLabel = computed(() =>
   selectedSource.value ? (selectedSource.value.file_name || selectedSource.value.url || 'Source') : '')
 

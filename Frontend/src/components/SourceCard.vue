@@ -10,7 +10,7 @@
     <div class="flex items-start justify-between gap-2">
       <div class="flex items-center gap-2 min-w-0">
         <span class="text-[10px] font-bold font-mono px-1.5 py-0.5 rounded bg-stone-100 dark:bg-white/[0.08] text-stone-500 dark:text-slate-400 flex-shrink-0 leading-none">[{{ source.index }}]</span>
-        <span class="text-sm flex-shrink-0 leading-none">{{ sourceIcon }}</span>
+        <FileTypeIcon :filename="source.file_name" :type="source.source_type" :size="16" />
         <span class="text-xs font-semibold text-stone-700 dark:text-slate-300 truncate">{{ label }}</span>
       </div>
       <div class="flex items-center gap-1.5 flex-shrink-0">
@@ -42,15 +42,14 @@
 
 <script setup>
 import { computed } from 'vue'
+import FileTypeIcon from './FileTypeIcon.vue'
 
 const props = defineProps({ source: Object, selected: Boolean })
 defineEmits(['select'])
 
-const sourceIcons  = { vector: '🗃️', bm25: '📝', graph: '🕸️', web: '🌐' }
 const sourceLabels = { vector: 'Vector', bm25: 'BM25', graph: 'Graph', web: 'Web' }
 
-const sourceIcon = computed(() => sourceIcons[props.source.source_type] || '📄')
-const sourceTag  = computed(() => sourceLabels[props.source.source_type] || props.source.source_type)
+const sourceTag = computed(() => sourceLabels[props.source.source_type] || props.source.source_type)
 const label      = computed(() => props.source.file_name || props.source.url || 'Source')
 
 const scoreLabel = computed(() => {

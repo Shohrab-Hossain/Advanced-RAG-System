@@ -1,5 +1,5 @@
 <template>
-  <div class="relative max-w-7xl mx-auto px-4 py-6">
+  <div class="relative max-w-7xl mx-auto px-6 sm:px-8 py-6">
 
     <!-- ── History overlay backdrop ─────────────────────────────── -->
     <transition name="backdrop">
@@ -167,11 +167,11 @@
       <!-- 2. Answer + sources -->
       <ResultDisplay v-if="store.hasResult" />
 
-      <!-- 3. Pipeline tracker (live run only) -->
-      <PipelineTracker v-if="store.isRunning || (store.hasResult && !store.isHistoryResult) || store.error" />
+      <!-- 3. Pipeline tracker -->
+      <PipelineTracker v-if="store.isRunning || store.hasResult || store.error" />
 
-      <!-- Pipeline metadata (live run only) -->
-      <details v-if="store.hasResult && !store.isHistoryResult"
+      <!-- Pipeline metadata -->
+      <details v-if="store.hasResult"
         class="group rounded-2xl border border-stone-200 dark:border-white/[0.07]
                bg-white dark:bg-[#1C1917]
                shadow-[0_1px_3px_0_rgb(0,0,0,0.07)] dark:shadow-none
@@ -241,14 +241,18 @@ function loadHistory(item) {
 }
 
 async function confirmDelete(id) {
-  const ok = await ui.confirm('Delete this chat from history?', { danger: true })
+  const ok = await ui.confirm('Delete this chat from history?', {
+    danger: true, confirmText: 'Yes, delete it', cancelText: 'No, keep it',
+  })
   if (!ok) return
   store.deleteHistoryItem(id)
   if (activeHistoryId.value === id) activeHistoryId.value = null
 }
 
 async function confirmClearAll() {
-  const ok = await ui.confirm('Delete all chat history? This cannot be undone.', { danger: true })
+  const ok = await ui.confirm('Delete all chat history? This cannot be undone.', {
+    danger: true, confirmText: 'Yes, delete all', cancelText: 'No, keep them',
+  })
   if (!ok) return
   store.clearChatHistory()
   activeHistoryId.value = null

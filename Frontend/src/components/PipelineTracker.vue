@@ -6,6 +6,13 @@
         <h2 class="section-label section-label-amber">Pipeline</h2>
         <span v-if="store.isRunning"
           class="w-3 h-3 border-[1.5px] border-teal-500 border-t-transparent rounded-full animate-spin" />
+        <span v-if="store.isHistoryResult && !store.isRunning"
+          class="text-[10px] font-medium px-2 py-0.5 rounded-full
+                 bg-stone-100 dark:bg-white/[0.06]
+                 text-slate-400 dark:text-stone-500
+                 border border-stone-200 dark:border-white/[0.07]">
+          from history
+        </span>
       </div>
       <div class="flex items-center gap-2">
         <span v-if="store.retryCount > 0"

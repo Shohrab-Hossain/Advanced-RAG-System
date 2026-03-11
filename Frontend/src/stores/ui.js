@@ -30,7 +30,14 @@ export const useUiStore = defineStore('ui', () => {
 
   function confirm(message, options = {}) {
     return new Promise((resolve) => {
-      modal.value = { type: 'confirm', message, resolve, danger: options.danger || false }
+      modal.value = {
+        type: 'confirm',
+        message,
+        resolve,
+        danger: options.danger || false,
+        confirmText: options.confirmText || null,
+        cancelText: options.cancelText || null,
+      }
     })
   }
 

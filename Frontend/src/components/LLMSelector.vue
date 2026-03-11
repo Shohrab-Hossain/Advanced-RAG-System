@@ -25,8 +25,9 @@
           <span v-if="store.llmProvider === 'openai'"
             class="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400" />
         </div>
-        <span class="text-[10px] text-slate-400 font-mono truncate w-full">
-          {{ activeOpenaiModel || openaiInfo.model || 'gpt-4o-mini' }}
+        <span class="text-[10px] font-mono truncate w-full"
+          :class="openaiInfo.available ? 'text-slate-400' : 'text-amber-500 dark:text-amber-400'">
+          {{ openaiInfo.available ? (activeOpenaiModel || openaiInfo.model || 'gpt-4o-mini') : '⚠ No API key' }}
         </span>
         <div class="flex items-center gap-1.5">
           <span class="w-1.5 h-1.5 rounded-full flex-shrink-0"
@@ -63,6 +64,16 @@
           </span>
         </div>
       </button>
+    </div>
+
+    <!-- OpenAI no key warning -->
+    <div v-if="store.llmProvider === 'openai' && !openaiInfo.available"
+      class="text-[10px] rounded-xl px-3 py-2.5 space-y-1
+             bg-amber-50 dark:bg-amber-500/[0.07]
+             border border-amber-200 dark:border-amber-500/20
+             text-amber-700 dark:text-amber-400">
+      <p class="font-semibold">OpenAI API key not configured</p>
+      <p class="opacity-80">Set the <code class="font-mono not-italic">OPENAI_API_KEY</code> environment variable on the server, then click Refresh.</p>
     </div>
 
     <!-- Ollama offline notice -->
@@ -139,10 +150,13 @@
     <!-- Footer -->
     <div class="flex items-center gap-2 pt-3 border-t border-stone-100 dark:border-white/[0.05]">
       <span class="text-[10px] text-slate-400 dark:text-slate-600">Active</span>
-      <span class="text-[11px] font-mono truncate text-slate-600 dark:text-slate-300">
+      <span class="text-[11px] font-mono truncate"
+        :class="(store.llmProvider === 'openai' && !openaiInfo.available)
+          ? 'text-amber-600 dark:text-amber-400'
+          : 'text-slate-600 dark:text-slate-300'">
         {{ store.llmProvider === 'ollama'
             ? (activeOllamaModel ? '🦙 ' + activeOllamaModel : '🦙 —')
-            : (activeOpenaiModel ? '🤖 ' + activeOpenaiModel : '🤖 —') }}
+            : (openaiInfo.available ? (activeOpenaiModel ? '🤖 ' + activeOpenaiModel : '🤖 —') : '🤖 ⚠ No key') }}
       </span>
       <span v-if="store.llmProvider === 'ollama' && !ollamaInfo.available"
         class="ml-auto text-[10px] text-teal-500 flex-shrink-0">⚠ offline</span>

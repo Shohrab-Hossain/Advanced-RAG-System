@@ -16,7 +16,7 @@
         </div>
         <div class="hidden sm:block leading-none">
           <span class="text-[13px] font-semibold text-stone-800 dark:text-stone-100 tracking-tight">
-            Advanced RAG
+            adRAG
           </span>
         </div>
       </RouterLink>
@@ -40,12 +40,22 @@
       <!-- Right controls -->
       <div class="flex items-center gap-2 flex-shrink-0">
 
-        <!-- Active model badge -->
-        <div class="hidden md:flex items-center gap-1.5 text-[11px] font-mono
-                    px-2.5 py-1 rounded-lg
-                    bg-stone-100 dark:bg-white/[0.05]
-                    text-slate-600 dark:text-slate-400
-                    border border-stone-200 dark:border-white/[0.07] max-w-[150px]">
+        <!-- Active model badge — warning when OpenAI key missing -->
+        <div v-if="store.llmProvider === 'openai' && !(store.availableProviders.openai?.available)"
+          class="hidden md:flex items-center gap-1.5 text-[11px] font-mono
+                 px-2.5 py-1 rounded-lg
+                 bg-amber-50 dark:bg-amber-500/[0.08]
+                 text-amber-600 dark:text-amber-400
+                 border border-amber-200 dark:border-amber-500/25 max-w-[160px]">
+          <span class="flex-shrink-0 text-xs">⚠</span>
+          <span class="truncate">No API key</span>
+        </div>
+        <div v-else
+          class="hidden md:flex items-center gap-1.5 text-[11px] font-mono
+                 px-2.5 py-1 rounded-lg
+                 bg-stone-100 dark:bg-white/[0.05]
+                 text-slate-600 dark:text-slate-400
+                 border border-stone-200 dark:border-white/[0.07] max-w-[150px]">
           <span class="flex-shrink-0 text-xs">{{ store.llmProvider === 'ollama' ? '🦙' : '🤖' }}</span>
           <span class="truncate">{{ activeModel ?? '—' }}</span>
         </div>

@@ -44,6 +44,8 @@ export const useRagStore = defineStore('rag', () => {
   const uploadProgress = ref(0)    // 0-100: file transfer
   const indexingProgress = ref(0)  // 0-100: server-side indexing phase
   const isIndexing = ref(false)
+  const uploadQueueCurrent = ref(0)   // which file in a batch (1-based)
+  const uploadQueueTotal = ref(0)     // total files in current batch
   // keep track of the last upload result so it can be cleared by other actions
   const uploadResult = ref(null)
 
@@ -156,6 +158,8 @@ export const useRagStore = defineStore('rag', () => {
             answer: result.answer,
             sources: result.sources || [],
             metadata: result.metadata || {},
+            stageStatuses: JSON.parse(JSON.stringify(stageStatuses)),
+            retryCount: retryCount.value,
             timestamp: Date.now(),
           })
           _persistHistory()
@@ -184,9 +188,15 @@ export const useRagStore = defineStore('rag', () => {
     error.value = ''
     isHistoryResult.value = true
     isRunning.value = false
-    retryCount.value = 0
+    retryCount.value = item.retryCount || 0
     Object.keys(stageStatuses).forEach((k) => {
-      stageStatuses[k] = { status: 'idle', message: '', details: null }
+      if (item.stageStatuses?.[k]) {
+        // Restore full saved state (status + message + details/chips)
+        stageStatuses[k] = item.stageStatuses[k]
+      } else {
+        // Old history item — no stageStatuses snapshot; mark as complete so tracker isn't blank
+        stageStatuses[k] = { status: 'complete', message: 'Pipeline completed', details: null }
+      }
     })
   }
 
@@ -200,18 +210,20 @@ export const useRagStore = defineStore('rag', () => {
     _persistHistory()
   }
 
-  async function uploadDocument(file) {
+  async function uploadDocument(file, { queueCurrent = 1, queueTotal = 1 } = {}) {
     uploading.value = true
     uploadProgress.value = 0
     isIndexing.value = false
     indexingProgress.value = 0
+    uploadQueueCurrent.value = queueCurrent
+    uploadQueueTotal.value = queueTotal
     uploadResult.value = null
     try {
       // Phase 1: file transfer — XHR progress callback
       const result = await uploadFile(file, (pct) => { uploadProgress.value = pct })
-      // Phase 2: indexing — animate 0→100 over ~2s while server processes
-      uploading.value = false
+      // Phase 2: indexing — start immediately, no gap
       isIndexing.value = true
+      uploading.value = false
       await _animateIndexing()
       isIndexing.value = false
       indexingProgress.value = 100
@@ -312,7 +324,7 @@ export const useRagStore = defineStore('rag', () => {
     query, isRunning, stageStatuses, events, retryCount,
     answer, sources, metadata, error, isHistoryResult,
     indexStats, knowledgeBases, uploading, uploadProgress, indexingProgress, isIndexing,
-    uploadResult,
+    uploadQueueCurrent, uploadQueueTotal, uploadResult,
     // chat history
     chatHistory,
     // computed

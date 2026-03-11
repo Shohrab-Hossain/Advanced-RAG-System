@@ -11,14 +11,16 @@
         <div class="flex justify-end gap-2">
           <button v-if="ui.modal.type === 'confirm'"
             class="btn-secondary text-xs py-1.5 px-4"
-            @click="ui.close(false)">Cancel</button>
+            @click="ui.close(false)">
+            {{ ui.modal.cancelText || 'Cancel' }}
+          </button>
           <button
             class="text-xs py-1.5 px-4 font-semibold rounded-xl transition-colors duration-150"
             :class="ui.modal.danger
               ? 'bg-red-600 hover:bg-red-500 active:bg-red-700 text-white'
               : 'btn-primary'"
             @click="ui.close(true)">
-            {{ ui.modal.danger ? 'Delete' : 'OK' }}
+            {{ ui.modal.confirmText || (ui.modal.danger ? 'Delete' : 'OK') }}
           </button>
         </div>
       </div>

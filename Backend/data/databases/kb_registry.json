@@ -2,16 +2,16 @@
   "9540284f3164bfc15d8a210700e086f0": {
     "id": "9540284f3164bfc15d8a210700e086f0",
     "name": "transcript_02.txt",
-    "uploaded_at": "2026-03-11T11:33:56.351237+00:00",
+    "uploaded_at": "2026-03-11T14:53:46.052422+00:00",
     "chunks": 207,
     "vectors": 207,
     "entities": 127,
-    "edges": 1048
+    "edges": 4457
   },
   "c18535e3a44d6e2997ea933262cec2aa": {
     "id": "c18535e3a44d6e2997ea933262cec2aa",
     "name": "transcipt_01.txt",
-    "uploaded_at": "2026-03-11T12:49:27.749087+00:00",
+    "uploaded_at": "2026-03-11T14:53:51.199014+00:00",
     "chunks": 103,
     "vectors": 103,
     "entities": 106,
@@ -20,7 +20,7 @@
   "89352184b6164549bd06e269aa67ed4c": {
     "id": "89352184b6164549bd06e269aa67ed4c",
     "name": "Hamlet.pdf",
-    "uploaded_at": "2026-03-11T12:43:50.593773+00:00",
+    "uploaded_at": "2026-03-11T14:54:17.533629+00:00",
     "chunks": 575,
     "vectors": 575,
     "entities": 843,

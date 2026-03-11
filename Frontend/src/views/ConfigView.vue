@@ -1,5 +1,5 @@
 <template>
-  <main class="max-w-6xl mx-auto px-4 py-8 space-y-8">
+  <main class="max-w-6xl mx-auto px-6 sm:px-8 py-8 space-y-8">
 
     <!-- Page header -->
     <div class="flex items-start gap-4 pb-5 border-b border-stone-200 dark:border-white/[0.06]">
@@ -8,9 +8,8 @@
       <div>
         <h1 class="text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100">Configuration</h1>
         <p class="text-sm text-stone-500 dark:text-slate-400 mt-1 leading-relaxed max-w-2xl">
-          Select your LLM provider and model. OpenAI requires an API key configured in the backend
-          <code class="font-mono text-xs bg-stone-100 dark:bg-white/[0.07] px-1.5 py-0.5 rounded">.env</code>
-          file. Ollama runs entirely on your machine — no data sent externally.
+          Select your LLM provider and model. OpenAI requires an API key set in the server environment.
+          Ollama runs entirely on your machine — no data sent externally.
         </p>
       </div>
     </div>
@@ -58,9 +57,8 @@
                    border border-teal-200 dark:border-teal-500/20
                    text-teal-700 dark:text-teal-400">
             <p class="font-semibold mb-1">API key not configured</p>
-            <p>Add <code class="font-mono bg-teal-100 dark:bg-teal-500/20 px-1 rounded">OPENAI_API_KEY=sk-...</code>
-               to <code class="font-mono bg-teal-100 dark:bg-teal-500/20 px-1 rounded">Backend/.env</code>
-               and restart the server.</p>
+            <p>Set <code class="font-mono bg-teal-100 dark:bg-teal-500/20 px-1 rounded">OPENAI_API_KEY</code>
+               as a server environment variable and restart the backend.</p>
           </div>
         </div>
 
@@ -127,7 +125,7 @@ const ollamaAvailable = computed(() => store.availableProviders.ollama?.availabl
 const openaiFeatures = [
   { text: 'Best reasoning and instruction following', positive: true },
   { text: 'gpt-4o-mini is fast and cost-effective', positive: true },
-  { text: 'Requires OPENAI_API_KEY in backend', positive: false },
+  { text: 'Requires OPENAI_API_KEY server variable', positive: false },
   { text: 'Data is sent to OpenAI servers', positive: false },
 ]
 

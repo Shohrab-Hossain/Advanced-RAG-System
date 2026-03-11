@@ -3,7 +3,11 @@
               text-stone-900 dark:text-stone-100
               transition-colors duration-200">
     <NavBar />
-    <RouterView />
+    <RouterView v-slot="{ Component }">
+      <Transition name="page" mode="out-in">
+        <component :is="Component" />
+      </Transition>
+    </RouterView>
     <ModalDialog />
   </div>
 </template>

@@ -87,6 +87,7 @@
 @layer utilities {
   .animate-fade-in  { animation: fade-in-anim 0.2s ease-out; }
   .animate-slide-up { animation: slide-up-anim 0.22s ease-out; }
+  .animate-shimmer  { animation: shimmer-anim 1.4s linear infinite; }
 
   @keyframes fade-in-anim {
     from { opacity: 0; transform: translateY(4px); }
@@ -96,4 +97,22 @@
     from { opacity: 0; transform: translateY(8px); }
     to   { opacity: 1; transform: translateY(0); }
   }
+  @keyframes shimmer-anim {
+    from { background-position: 200% center; }
+    to   { background-position: -200% center; }
+  }
+}
+
+/* ── Page route transitions ────────────────────────────────────────────────── */
+.page-enter-active,
+.page-leave-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
 }

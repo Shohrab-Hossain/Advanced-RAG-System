@@ -24,7 +24,8 @@
       "Bash(node -e \":*)",
       "Bash(node -e \"require\\(''fs''\\).writeFileSync\\(''c:/A. SH-Home/Projects/RAG/Frontend/src/views/ChatView.vue'', ''test'', ''utf8''\\); console.log\\(''ok''\\)\")",
       "Bash(node \"c:/A. SH-Home/Projects/RAG/Frontend/replace_theme.js\")",
-      "Bash(node replace_theme.js)"
+      "Bash(node replace_theme.js)",
+      "Bash(python -c \":*)"
     ]
   }
 }

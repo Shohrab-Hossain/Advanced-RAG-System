@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-[calc(100vh-56px)] flex flex-col items-center justify-center px-4 py-16">
+  <div class="min-h-[calc(100vh-56px)] flex flex-col items-center justify-center px-6 sm:px-8 py-16">
 
     <!-- Hero -->
     <div class="text-center mb-12 animate-fade-in">
@@ -10,7 +10,7 @@
         🧬
       </div>
       <h1 class="text-4xl font-bold tracking-tight text-stone-900 dark:text-stone-100 mb-4">
-        Advanced RAG System
+        adRAG
       </h1>
       <p class="text-base text-stone-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
         A multi-stage Retrieval-Augmented Generation pipeline that combines

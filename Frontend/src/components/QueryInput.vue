@@ -17,7 +17,7 @@
                rounded-xl px-4 py-3 pr-16
                text-stone-800 dark:text-stone-100
                placeholder-slate-400 dark:placeholder-slate-600
-               resize-none overflow-hidden
+               resize-y overflow-y-auto
                transition duration-150 text-sm
                disabled:opacity-40"
         style="min-height: 80px; max-height: 400px"
@@ -88,8 +88,12 @@ const examples = [
 function autoGrow() {
   const el = textareaRef.value
   if (!el) return
-  el.style.height = 'auto'
-  el.style.height = Math.min(el.scrollHeight, 400) + 'px'
+  // Only auto-grow if content is taller than current box (don't shrink manual resizes)
+  const natural = Math.min(el.scrollHeight, 400)
+  const current = el.offsetHeight
+  if (natural > current) {
+    el.style.height = natural + 'px'
+  }
 }
 
 function setExample(ex) { localQuery.value = ex; nextTick(autoGrow) }
