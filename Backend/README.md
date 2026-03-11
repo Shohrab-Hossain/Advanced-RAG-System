@@ -1,55 +1,48 @@
-# RAG Backend
+# adRAG — Backend
 
-Flask API serving an advanced Retrieval-Augmented Generation pipeline.
+Flask REST + SSE API over a LangGraph multi-stage RAG pipeline. Handles document ingestion, three-store hybrid retrieval (vector + BM25 + graph), LLM reasoning, and real-time streaming progress events.
 
 ## Quick Start
 
 ```bash
 cd Backend
+python -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-cp .env.example .env          # fill in OPENAI_API_KEY (or configure Ollama)
-python main.py                # starts on http://localhost:5000
+cp .env.example .env             # add OPENAI_API_KEY
+python src/main.py               # API → http://localhost:5000
 ```
 
-## API Endpoints
+## Stack
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/api/query` | Run the RAG pipeline — returns SSE stream |
-| `POST` | `/api/upload` | Upload and index a document |
-| `GET` | `/api/documents` | Global index statistics |
-| `GET` | `/api/knowledge-bases` | Per-file knowledge base stats |
-| `DELETE` | `/api/knowledge-bases/<hash>` | Remove a specific knowledge base |
-| `DELETE` | `/api/clear` | Wipe all indexed documents |
-| `GET` | `/api/providers` | LLM provider availability |
-| `GET` | `/api/health` | Health check |
+- **Flask** + Flask-CORS — REST API + SSE streaming
+- **LangGraph** — Pipeline state machine
+- **LangChain** — LLM abstraction (OpenAI + Ollama)
+- **ChromaDB** — Dense vector store
+- **rank-bm25** — Sparse keyword retrieval
+- **NetworkX** — Knowledge graph (GraphRAG)
+- **SentenceTransformers** — Embeddings + cross-encoder reranking
 
-## File Structure
-
-```
-Backend/
-├── main.py               Entry point (python main.py)
-├── app.py                Flask app factory, all route handlers
-├── config.py             All settings (env vars + defaults)
-├── requirements.txt      Python dependencies
-├── .env.example          Environment variable template
-└── rag_pipeline/         Core RAG package → see rag_pipeline/README.md
-```
-
-## Configuration
-
-Copy `.env.example` to `.env` and set:
+## Environment Variables
 
 | Variable | Default | Description |
-|----------|---------|-------------|
+|---|---|---|
 | `OPENAI_API_KEY` | — | Required for OpenAI provider |
-| `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama server URL |
-| `OLLAMA_MODEL` | `llama3.2:latest` | Local model name |
+| `LLM_MODEL` | `gpt-4o-mini` | OpenAI model |
+| `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama server |
+| `OLLAMA_MODEL` | `llama3.2` | Default Ollama model |
 | `DEFAULT_PROVIDER` | `openai` | `openai` or `ollama` |
-| `EMBEDDING_MODEL` | `all-MiniLM-L6-v2` | Sentence-transformers model |
-| `RERANKER_MODEL` | `cross-encoder/ms-marco-MiniLM-L-6-v2` | Cross-encoder model |
-| `RETRIEVAL_TOP_K` | `10` | Docs retrieved per strategy |
-| `RERANK_TOP_K` | `5` | Docs kept after reranking |
-| `MAX_CONTEXT_CHARS` | `4000` | Context window before compression |
-| `MAX_REFLECTION_RETRIES` | `2` | Self-reflection retry budget |
-| `CHUNK_SIZE` | `500` | Document chunk size (chars) |
+| `PORT` | `5000` | Server port |
+
+See [`documentation/architecture.md`](documentation/architecture.md) for the full config reference.
+
+## Documentation
+
+Detailed docs in [`documentation/`](documentation/):
+
+| File | Contents |
+|---|---|
+| [documentation/README.md](documentation/README.md) | Setup, project structure |
+| [documentation/rag-pipeline.md](documentation/rag-pipeline.md) | Every pipeline node, retrieval stores, retry loop |
+| [documentation/api.md](documentation/api.md) | All API endpoints + SSE event reference |
+| [documentation/architecture.md](documentation/architecture.md) | Config reference, persistence, ingestion, LLM layer |

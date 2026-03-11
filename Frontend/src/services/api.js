@@ -67,16 +67,19 @@ export async function deleteKnowledgeBase(fileHash) {
  *
  * @param {string} query
  * @param {string} provider  "openai" | "ollama"
+ * @param {string|null} model  Ollama model override (null → backend uses env default)
  * @param {{ onEvent: (type, data) => void, onDone: (result) => void, onError: (err) => void }} callbacks
  * @returns {{ abort: () => void }}
  */
-export function streamQuery(query, provider = 'openai', { onEvent, onDone, onError }) {
+export function streamQuery(query, provider = 'openai', model = null, { onEvent, onDone, onError }) {
   const controller = new AbortController()
+  const body = { query, provider }
+  if (model) body.model = model
 
   fetch(`${BASE}/api/query`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query, provider }),
+    body: JSON.stringify(body),
     signal: controller.signal,
   })
     .then(async (res) => {

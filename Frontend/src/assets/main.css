@@ -3,34 +3,116 @@
 @tailwind utilities;
 
 @layer base {
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: #0f172a; }
-  ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: #475569; }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { @apply bg-transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-stone-300 dark:bg-stone-700 rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-stone-400 dark:bg-stone-600; }
+
+  body {
+    @apply font-sans antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
 }
 
 @layer components {
+
+  /* ── Card ──────────────────────────────────────────────────────────────── */
   .card {
-    @apply bg-slate-900 border border-slate-800 rounded-xl p-4;
+    @apply bg-white dark:bg-[#1C1917]
+           border border-stone-200/80 dark:border-white/[0.07]
+           rounded-2xl p-5
+           shadow-[0_1px_3px_0_rgb(0,0,0,0.07),0_1px_2px_-1px_rgb(0,0,0,0.05)]
+           dark:shadow-none;
   }
+
+  .card-sm {
+    @apply bg-white dark:bg-[#1C1917]
+           border border-stone-200/80 dark:border-white/[0.07]
+           rounded-xl p-4
+           shadow-[0_1px_3px_0_rgb(0,0,0,0.07),0_1px_2px_-1px_rgb(0,0,0,0.05)]
+           dark:shadow-none;
+  }
+
+  /* ── Section labels ────────────────────────────────────────────────────── */
+  .section-label {
+    @apply text-[10px] font-semibold uppercase tracking-[0.1em];
+  }
+  /* emerald = primary — also keep indigo/orange aliases so existing refs work */
+  .section-label-orange,
+  .section-label-indigo  { @apply text-emerald-600  dark:text-emerald-400; }
+  .section-label-emerald { @apply text-emerald-600 dark:text-emerald-400; }
+  .section-label-sky     { @apply text-sky-500     dark:text-sky-400; }
+  .section-label-amber   { @apply text-amber-600   dark:text-amber-400; }
+  .section-label-muted   { @apply text-stone-400   dark:text-stone-500; }
+
+  /* ── Buttons ────────────────────────────────────────────────────────────── */
   .btn-primary {
-    @apply bg-brand-600 hover:bg-brand-500 disabled:opacity-50 disabled:cursor-not-allowed
-           text-white font-semibold px-5 py-2.5 rounded-lg transition-colors duration-150;
+    @apply bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700
+           disabled:opacity-40 disabled:cursor-not-allowed
+           text-white font-semibold px-5 py-2.5
+           rounded-xl transition-colors duration-150;
   }
+
   .btn-secondary {
-    @apply bg-slate-800 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed
-           text-slate-200 font-medium px-4 py-2 rounded-lg transition-colors duration-150;
+    @apply bg-stone-100 hover:bg-stone-200 active:bg-stone-300
+           dark:bg-white/[0.06] dark:hover:bg-white/[0.10] dark:active:bg-white/[0.14]
+           disabled:opacity-40 disabled:cursor-not-allowed
+           text-stone-700 dark:text-stone-300
+           font-medium px-4 py-2 rounded-xl
+           border border-stone-200 dark:border-white/[0.07]
+           transition-colors duration-150;
   }
+
+  /* ── Prose (markdown answer) ────────────────────────────────────────────── */
   .prose-rag {
-    @apply text-slate-200 leading-relaxed;
+    @apply text-stone-700 dark:text-stone-300 leading-relaxed text-sm;
   }
-  .prose-rag p { @apply mb-3; }
-  .prose-rag strong { @apply text-white font-semibold; }
-  .prose-rag h1,h2,h3 { @apply text-white font-bold mt-4 mb-2; }
-  .prose-rag ul { @apply list-disc list-inside mb-3 space-y-1; }
-  .prose-rag ol { @apply list-decimal list-inside mb-3 space-y-1; }
-  .prose-rag code { @apply bg-slate-800 text-brand-400 px-1.5 py-0.5 rounded text-sm; }
-  .prose-rag pre { @apply bg-slate-800 p-4 rounded-lg overflow-x-auto mb-3; }
-  .prose-rag pre code { @apply bg-transparent p-0; }
-  .prose-rag blockquote { @apply border-l-4 border-brand-600 pl-4 italic text-slate-400; }
+  .prose-rag p          { @apply mb-3; }
+  .prose-rag strong     { @apply text-stone-900 dark:text-stone-100 font-semibold; }
+  .prose-rag h1,
+  .prose-rag h2,
+  .prose-rag h3         { @apply text-stone-900 dark:text-stone-100 font-bold mt-5 mb-2; }
+  .prose-rag ul         { @apply list-disc list-inside mb-3 space-y-1; }
+  .prose-rag ol         { @apply list-decimal list-inside mb-3 space-y-1; }
+  .prose-rag code       { @apply bg-emerald-50 dark:bg-emerald-950/30
+                                 text-emerald-700 dark:text-emerald-400
+                                 px-1.5 py-0.5 rounded-md text-[13px] font-mono; }
+  .prose-rag pre        { @apply bg-stone-100 dark:bg-[#0C0A09] p-4 rounded-xl overflow-x-auto mb-3; }
+  .prose-rag pre code   { @apply bg-transparent p-0 text-stone-700 dark:text-stone-300; }
+  .prose-rag blockquote { @apply border-l-2 border-emerald-300 dark:border-emerald-700
+                                 pl-4 italic text-stone-500 dark:text-stone-400 my-3; }
+  .prose-rag a          { @apply text-emerald-600 dark:text-emerald-400 underline hover:no-underline; }
+}
+
+@layer utilities {
+  .animate-fade-in  { animation: fade-in-anim 0.2s ease-out; }
+  .animate-slide-up { animation: slide-up-anim 0.22s ease-out; }
+  .animate-shimmer  { animation: shimmer-anim 1.4s linear infinite; }
+
+  @keyframes fade-in-anim {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slide-up-anim {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes shimmer-anim {
+    from { background-position: 200% center; }
+    to   { background-position: -200% center; }
+  }
+}
+
+/* ── Page route transitions ────────────────────────────────────────────────── */
+.page-enter-active,
+.page-leave-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
 }

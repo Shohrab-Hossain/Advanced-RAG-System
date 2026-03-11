@@ -10,6 +10,9 @@ build/
 .eggs/
 *.whl
 
+# Local LLMs
+.claude
+
 # Virtual environments
 my_venv/
 venv/
@@ -23,10 +26,7 @@ env/
 !.env.example
 
 # ── RAG data (runtime, not source) ───────────────────────────────────────────
-Backend/data/chroma_db/
-Backend/data/bm25_store.pkl
-Backend/data/graph_store.pkl
-Backend/data/kb_registry.json
+Backend/data/databases/
 Backend/data/uploads/
 
 # ── Node / Frontend ───────────────────────────────────────────────────────────
