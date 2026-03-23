@@ -54,6 +54,7 @@ def external_tools_node(state: RAGState) -> dict:
                     "source": "web",
                     "rerank_score": 0.0,
                 })
+                print(f"Retrieved web doc: {r.get('title', '')} ({r.get('href', '')})")
 
         emit(session_id, "stage_complete", {
             "stage": "external_tools",
