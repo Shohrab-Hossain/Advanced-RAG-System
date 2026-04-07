@@ -23,7 +23,7 @@
         <div>
           <p class="section-label section-label-indigo mb-1">Upload Document</p>
           <p class="text-xs text-slate-400 dark:text-stone-500">
-            PDF, DOCX, TXT, Markdown — up to 50 MB
+            PDF · DOCX · TXT · MD · JSON · CSV · HTML · Code files — up to 50 MB
           </p>
         </div>
 
@@ -44,7 +44,7 @@
           @click="$refs.fileInput.click()"
         >
           <input ref="fileInput" type="file" multiple class="hidden"
-                 accept=".pdf,.txt,.md,.docx" @change="onFileChange" />
+                 :accept="accept" @change="onFileChange" />
           <div class="text-4xl mb-3">
             {{ isDragging && dragCount > 1 ? '📚' : '📄' }}
           </div>
@@ -54,7 +54,7 @@
                 : 'Drop files here, or click to browse' }}
           </p>
           <p class="text-xs text-slate-400 dark:text-stone-500 mt-1.5">
-            PDF · DOCX · TXT · Markdown — multiple files supported
+            PDF · DOCX · TXT · MD · JSON · CSV · HTML · Code files — multiple files supported
           </p>
         </div>
 
@@ -213,7 +213,7 @@
                   flex items-center justify-center text-3xl mb-4">🗂️</div>
       <p class="text-stone-700 dark:text-slate-300 font-semibold text-sm">No documents yet</p>
       <p class="text-slate-400 dark:text-stone-500 text-xs mt-1.5 max-w-xs leading-relaxed">
-        Upload a PDF, DOCX, TXT or Markdown file above to begin building your knowledge base.
+        Upload a PDF, DOCX, TXT, Markdown, JSON, CSV, HTML, or code file above to begin building your knowledge base.
       </p>
     </div>
 
@@ -230,6 +230,15 @@ const store = useRagStore()
 const ui = useUiStore()
 const isDragging = ref(false)
 const dragCount = ref(0)
+
+const accept = [
+  '.pdf', '.docx', '.txt', '.md',
+  '.json', '.csv', '.html', '.htm',
+  '.js', '.jsx', '.ts', '.tsx', '.css', '.scss',
+  '.py', '.java', '.c', '.cpp', '.cs', '.go', '.rb', '.php', '.rs',
+  '.sh', '.bat', '.pl', '.swift', '.kt', '.scala', '.r', '.m', '.vb',
+  '.lua', '.dart', '.sql',
+].join(',')
 
 onMounted(async () => {
   await Promise.all([store.refreshStats(), store.fetchKnowledgeBases()])

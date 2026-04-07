@@ -1,7 +1,7 @@
 """
 Document Loader & Chunker
 --------------------------
-Loads PDF, DOCX, TXT, and Markdown files.
+Loads PDF, DOCX, TXT, Markdown, JSON, CSV, HTML, and code files.
 Splits them into overlapping chunks for indexing.
 Returns (texts, metadatas) ready for all three stores.
 """
@@ -17,16 +17,31 @@ from langchain_community.document_loaders import (
     TextLoader,
     Docx2txtLoader,
     UnstructuredMarkdownLoader,
+    BSHTMLLoader,
+    CSVLoader,
 )
 
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "500"))
 CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "50"))
+
+# Plain-text code/data extensions handled by TextLoader
+_TEXT_EXTENSIONS = {
+    ".txt", ".json", ".js", ".jsx", ".ts", ".tsx", ".css", ".scss",
+    ".py", ".java", ".c", ".cpp", ".cs", ".go", ".rb", ".php", ".rs",
+    ".sh", ".bat", ".pl", ".swift", ".kt", ".scala", ".r", ".m", ".vb",
+    ".lua", ".dart", ".sql",
+}
 
 SUPPORTED_EXTENSIONS = {
     ".pdf": "pdf",
     ".txt": "text",
     ".md": "markdown",
     ".docx": "docx",
+    ".json": "json",
+    ".csv": "csv",
+    ".html": "html",
+    ".htm": "html",
+    **{ext: "code" for ext in _TEXT_EXTENSIONS - {".txt", ".json"}},
 }
 
 
@@ -43,18 +58,23 @@ def _get_loader(file_path: str):
     ext = Path(file_path).suffix.lower()
     if ext == ".pdf":
         return PyPDFLoader(file_path)
-    if ext == ".txt":
-        return TextLoader(file_path, encoding="utf-8")
-    if ext == ".md":
-        return UnstructuredMarkdownLoader(file_path)
     if ext == ".docx":
         return Docx2txtLoader(file_path)
+    if ext == ".md":
+        return UnstructuredMarkdownLoader(file_path)
+    if ext in (".html", ".htm"):
+        return BSHTMLLoader(file_path, open_encoding="utf-8")
+    if ext == ".csv":
+        return CSVLoader(file_path, encoding="utf-8")
+    if ext in _TEXT_EXTENSIONS:
+        return TextLoader(file_path, encoding="utf-8")
     raise ValueError(f"Unsupported file type: {ext}")
 
 
 def load_file(file_path: str) -> Tuple[List[str], List[dict]]:
     """
-    Load a file, split into chunks, and return:
+    Load a file (PDF, DOCX, MD, HTML, CSV, JSON, code files, TXT),
+    split into chunks, and return:
       texts     — list of chunk strings
       metadatas — list of metadata dicts (one per chunk)
     """

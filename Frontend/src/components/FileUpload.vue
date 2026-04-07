@@ -23,7 +23,7 @@
         Drop a file or click to browse
       </p>
       <p class="text-xs text-stone-400 dark:text-stone-400 mt-1">
-        PDF · DOCX · TXT · Markdown
+        PDF · DOCX · TXT · MD · JSON · CSV · HTML · Code files
       </p>
     </div>
 
@@ -74,7 +74,14 @@ import { useRagStore } from '../stores/rag'
 
 const store = useRagStore()
 const isDragging = ref(false)
-const accept = '.pdf,.txt,.md,.docx'
+const accept = [
+  '.pdf', '.docx', '.txt', '.md',
+  '.json', '.csv', '.html', '.htm',
+  '.js', '.jsx', '.ts', '.tsx', '.css', '.scss',
+  '.py', '.java', '.c', '.cpp', '.cs', '.go', '.rb', '.php', '.rs',
+  '.sh', '.bat', '.pl', '.swift', '.kt', '.scala', '.r', '.m', '.vb',
+  '.lua', '.dart', '.sql',
+].join(',')
 
 async function handleFile(file) {
   if (!file) return

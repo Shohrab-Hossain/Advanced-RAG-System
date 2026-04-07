@@ -41,7 +41,7 @@ def create_app() -> Flask:
         app,
         resources={
             r"/api/*": {
-                "origins": [Config.FRONTEND_URL, "http://localhost:3000", "http://localhost:8080"],
+                "origins": [Config.FRONTEND_URL, "http://localhost:3000", "http://localhost:5000", "http://localhost:8080", "http://localhost:8081", "*"],
                 "methods": ["GET", "POST", "DELETE", "OPTIONS"],
                 "allow_headers": ["Content-Type"],
                 "expose_headers": ["Content-Type"],
@@ -135,7 +135,7 @@ def create_app() -> Flask:
                 while True:
                     item = event_queue.get(timeout=180)   # 3-min hard timeout
                     if item is None:
-                        yield "data: {\"type\": \"stream_end\"}\n\n"
+                        yield format_sse({"type": "stream_end"})
                         break
                     yield format_sse(item)
             except Exception:
@@ -166,7 +166,7 @@ def create_app() -> Flask:
             return jsonify({"error": "Empty filename"}), 400
         if not _allowed(f.filename):
             return jsonify({
-                "error": f"Unsupported file type. Allowed: {', '.join(Config.ALLOWED_EXTENSIONS)}"
+                "error": f"Unsupported file type. Allowed: {', '.join(sorted(Config.ALLOWED_EXTENSIONS))}"
             }), 400
 
         filename = secure_filename(f.filename)
@@ -306,7 +306,7 @@ def create_app() -> Flask:
 
     @app.route("/api/health", methods=["GET"])
     def health():
-        return jsonify({"status": "ok", "version": "1.0.0"})
+        return jsonify({"status": "healthy"})
 
     return app
 

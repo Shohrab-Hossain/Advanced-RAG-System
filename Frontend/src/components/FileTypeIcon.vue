@@ -72,12 +72,45 @@ const props = defineProps({
 })
 
 const EXT_MAP = {
-  pdf:      { label: 'PDF', color: '#EF4444' },
-  docx:     { label: 'DOC', color: '#3B82F6' },
-  doc:      { label: 'DOC', color: '#3B82F6' },
-  txt:      { label: 'TXT', color: '#6B7280' },
-  md:       { label: 'MD',  color: '#8B5CF6' },
-  markdown: { label: 'MD',  color: '#8B5CF6' },
+  // Documents
+  pdf:      { label: 'PDF',  color: '#EF4444' },
+  docx:     { label: 'DOC',  color: '#3B82F6' },
+  doc:      { label: 'DOC',  color: '#3B82F6' },
+  txt:      { label: 'TXT',  color: '#6B7280' },
+  md:       { label: 'MD',   color: '#8B5CF6' },
+  markdown: { label: 'MD',   color: '#8B5CF6' },
+  // Data
+  json:     { label: 'JSON', color: '#F59E0B' },
+  csv:      { label: 'CSV',  color: '#10B981' },
+  html:     { label: 'HTML', color: '#F97316' },
+  htm:      { label: 'HTML', color: '#F97316' },
+  // Web / styles
+  js:       { label: 'JS',   color: '#EAB308' },
+  jsx:      { label: 'JSX',  color: '#EAB308' },
+  ts:       { label: 'TS',   color: '#3B82F6' },
+  tsx:      { label: 'TSX',  color: '#3B82F6' },
+  css:      { label: 'CSS',  color: '#06B6D4' },
+  scss:     { label: 'SCSS', color: '#C026D3' },
+  // Backend / systems
+  py:       { label: 'PY',   color: '#3B82F6' },
+  java:     { label: 'JAVA', color: '#F97316' },
+  c:        { label: 'C',    color: '#6B7280' },
+  cpp:      { label: 'C++',  color: '#6B7280' },
+  cs:       { label: 'C#',   color: '#8B5CF6' },
+  go:       { label: 'GO',   color: '#06B6D4' },
+  rb:       { label: 'RB',   color: '#EF4444' },
+  php:      { label: 'PHP',  color: '#8B5CF6' },
+  rs:       { label: 'RS',   color: '#F97316' },
+  swift:    { label: 'SWIFT',color: '#F97316' },
+  kt:       { label: 'KT',   color: '#8B5CF6' },
+  scala:    { label: 'SCA',  color: '#EF4444' },
+  r:        { label: 'R',    color: '#3B82F6' },
+  lua:      { label: 'LUA',  color: '#6B7280' },
+  dart:     { label: 'DART', color: '#06B6D4' },
+  sql:      { label: 'SQL',  color: '#F59E0B' },
+  sh:       { label: 'SH',   color: '#6B7280' },
+  bat:      { label: 'BAT',  color: '#6B7280' },
+  pl:       { label: 'PL',   color: '#6B7280' },
 }
 
 const TYPE_MAP = {

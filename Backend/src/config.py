@@ -59,7 +59,10 @@ class Config:
 
     # ── Flask / CORS ──────────────────────────────────────────────────────────
     MAX_CONTENT_LENGTH: int = 50 * 1024 * 1024   # 50 MB
-    ALLOWED_EXTENSIONS: set = {"pdf", "txt", "md", "docx"}
+    ALLOWED_EXTENSIONS: set = {
+        "pdf", "txt", "md", "docx", "json", "csv", "html", "htm",
+        "js", "jsx", "ts", "tsx", "css", "scss", "py", "java", "c", "cpp", "cs", "go", "rb", "php", "rs", "sh", "bat", "pl", "swift", "kt", "scala", "r", "m", "vb", "lua", "dart", "sql"
+    }
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
     DEBUG: bool = os.getenv("FLASK_DEBUG", "true").lower() == "true"
-    PORT: int = int(os.getenv("PORT", "5000"))
+    PORT: int = int(os.getenv("PORT", "5001"))
