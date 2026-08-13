@@ -1,0 +1,21 @@
+%%{init: {'theme':'base','fontFamily':'Plus Jakarta Sans, ui-sans-serif, system-ui, sans-serif','themeCSS':'.edgeLabel, .edgeLabel p, .edgeLabel span { font-family: JetBrains Mono, ui-monospace, Consolas, monospace !important; font-size: 11px !important; color:#6B7280 !important; } .nodeLabel { font-weight:500; text-align:center; }','themeVariables':{'fontSize':'14px','primaryTextColor':'#0F172A','lineColor':'#059669','edgeLabelBackground':'#FFFFFF'},'flowchart':{'curve':'basis','nodeSpacing':54,'rankSpacing':44,'diagramPadding':8,'htmlLabels':true}}}%%
+flowchart TD
+    Q(["User query"]):::se
+    Q --> P{"planner<br/>retrieve?"}:::dec
+    P -->|"retrieve"| R("retrieval<br/>vector · BM25 · graph"):::step
+    P -->|"web only"| X("external_tools<br/>DuckDuckGo"):::step
+    P -->|"answer direct"| AG("aggregate<br/>merge · dedup by MD5"):::step
+    R --> X
+    X --> AG
+    AG --> RK("rerank<br/>cross-encoder · top 5"):::step
+    RK --> CP("compress<br/>above 4 000 chars only"):::step
+    CP --> RS("reason<br/>cited answer"):::step
+    RS --> RF{"reflect<br/>grounded?"}:::dec
+    RF -->|"yes"| DONE(["Cited answer"]):::ok
+    RF -->|"retry · max 2"| R
+    classDef se fill:#047857,stroke:#059669,color:#FFFFFF,font-weight:600;
+    classDef step fill:#ECFDF5,stroke:#A7F3D0,color:#0F172A;
+    classDef dec fill:#FEF3C7,stroke:#F59E0B,color:#0F172A;
+    classDef ok fill:#DCFCE7,stroke:#22C55E,color:#14532D,font-weight:600;
+    linkStyle default stroke:#059669,stroke-width:1.5px;
+    linkStyle 11 stroke:#F59E0B,stroke-width:1.5px,stroke-dasharray:5 3;
