@@ -10,8 +10,9 @@ build/
 .eggs/
 *.whl
 
-# Local LLMs
+# ── Claude workspace (symlinks into Claude Home — not part of the repo) ──────
 .claude
+.project-brain
 
 # Virtual environments
 my_venv/
