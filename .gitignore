@@ -26,8 +26,11 @@ env/
 !.env.example
 
 # ── RAG data (runtime, not source) ───────────────────────────────────────────
-Backend/data/databases/
-Backend/data/uploads/
+# DATA_ROOT ("./data") resolves against the process working directory, and both
+# main.py and dev.py start the app inside Backend/src/ — so the live stores land
+# in Backend/src/data/. The Backend/data/ pair covers a run started one level up.
+Backend/src/data/
+Backend/data/
 
 # ── Node / Frontend ───────────────────────────────────────────────────────────
 node_modules/
