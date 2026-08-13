@@ -47,8 +47,11 @@ def get_llm(provider: str = "openai", temperature: float = 0, json_mode: bool = 
         if json_mode:
             kwargs["format"] = "json"
         llm = ChatOllama(
-            model=model or os.getenv("OLLAMA_MODEL"),
-            base_url=os.getenv("OLLAMA_BASE_URL"),
+            # Defaults mirror Config.OLLAMA_MODEL / OLLAMA_BASE_URL (config.py:22-23).
+            # Without them an /api/query that omits "model" passes None to ChatOllama
+            # and every LLM node fails pydantic validation.
+            model=model or os.getenv("OLLAMA_MODEL", "llama3.2"),
+            base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
             temperature=temperature,
             **kwargs,
         )

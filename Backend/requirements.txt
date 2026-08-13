@@ -29,6 +29,7 @@ networkx>=3.3
 pypdf>=4.0.0
 docx2txt>=0.8
 unstructured>=0.14.0
+markdown>=3.6                 # unstructured's .md partitioner imports it at call time
 
 # ── Web search (optional — for use_external=True) ────────────────────────────
 ddgs>=7.0.0
