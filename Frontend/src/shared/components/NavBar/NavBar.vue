@@ -105,11 +105,13 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { useRagStore } from '../stores/rag'
-import { useUiStore } from '../stores/ui'
-import { healthCheck } from '../services/api'
+import { useRagStore } from '../../../subsystems/rag/ragStore'
+import { useKbStore } from '../../../subsystems/knowledge-base/kbStore'
+import { useUiStore } from '../../../store'
+import { healthCheck } from '../../../subsystems/rag/ragApi'
 
 const store = useRagStore()
+const kb = useKbStore()
 const ui = useUiStore()
 const route = useRoute()
 const connected = ref(false)
@@ -139,7 +141,7 @@ onMounted(async () => {
   try {
     await healthCheck()
     connected.value = true
-    await Promise.all([store.refreshStats(), store.fetchProviders(), store.fetchKnowledgeBases()])
+    await Promise.all([kb.refreshStats(), store.fetchProviders(), kb.fetchKnowledgeBases()])
   } catch {
     connected.value = false
   }

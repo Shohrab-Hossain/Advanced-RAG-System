@@ -42,7 +42,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import FileTypeIcon from './FileTypeIcon.vue'
+import FileTypeIcon from '../../../../shared/components/FileTypeIcon/FileTypeIcon.vue'
 
 const props = defineProps({ source: Object, selected: Boolean })
 defineEmits(['select'])

@@ -114,8 +114,8 @@
 
 <script setup>
 import { computed } from 'vue'
-import { useRagStore } from '../stores/rag'
-import LLMSelector from '../components/LLMSelector.vue'
+import { useRagStore } from '../../../subsystems/rag/ragStore'
+import LLMSelector from '../components/LLMSelector/LLMSelector.vue'
 
 const store = useRagStore()
 

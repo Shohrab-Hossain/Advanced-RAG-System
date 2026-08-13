@@ -93,9 +93,9 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { marked } from 'marked'
-import { useRagStore } from '../stores/rag'
+import { useRagStore } from '../../../../subsystems/rag/ragStore'
 import SourceCard from './SourceCard.vue'
-import FileTypeIcon from './FileTypeIcon.vue'
+import FileTypeIcon from '../../../../shared/components/FileTypeIcon/FileTypeIcon.vue'
 
 const store = useRagStore()
 const copied = ref(false)

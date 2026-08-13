@@ -1,16 +1,16 @@
 /**
  * Pinia Store — RAG State
  * ------------------------
- * Central state for the entire UI:
- *   - Document index stats
+ * State for the query capability:
+ *   - LLM provider selection
  *   - Current query lifecycle (idle → running → done | error)
  *   - Pipeline stage statuses (drives PipelineTracker)
- *   - Final answer + sources
+ *   - Final answer + sources, and the persisted chat history
  */
 
 import { defineStore } from 'pinia'
 import { ref, reactive, computed } from 'vue'
-import { streamQuery, uploadFile, getDocuments, clearDocuments, getProviders, getKnowledgeBases, deleteKnowledgeBase } from '../services/api'
+import { streamQuery, getProviders } from './ragApi'
 
 // Pipeline stage definitions (order matters — used for display)
 export const STAGES = [
@@ -36,18 +36,6 @@ export const useRagStore = defineStore('rag', () => {
     openai: { available: false, model: '' },
     ollama: { available: false, model: '', models: [] },
   })
-
-  // ── Document index ──────────────────────────────────────────────────────────
-  const indexStats = ref({ vector_count: 0, bm25_count: 0, graph: {} })
-  const knowledgeBases = ref([])
-  const uploading = ref(false)
-  const uploadProgress = ref(0)    // 0-100: file transfer
-  const indexingProgress = ref(0)  // 0-100: server-side indexing phase
-  const isIndexing = ref(false)
-  const uploadQueueCurrent = ref(0)   // which file in a batch (1-based)
-  const uploadQueueTotal = ref(0)     // total files in current batch
-  // keep track of the last upload result so it can be cleared by other actions
-  const uploadResult = ref(null)
 
   // ── Query state ─────────────────────────────────────────────────────────────
   const query = ref('')
@@ -77,7 +65,6 @@ export const useRagStore = defineStore('rag', () => {
 
   // ── Computed ─────────────────────────────────────────────────────────────────
   const hasResult = computed(() => !!answer.value)
-  const hasDocuments = computed(() => indexStats.value.vector_count > 0)
 
   // ── Actions ──────────────────────────────────────────────────────────────────
 
@@ -210,84 +197,6 @@ export const useRagStore = defineStore('rag', () => {
     _persistHistory()
   }
 
-  async function uploadDocument(file, { queueCurrent = 1, queueTotal = 1 } = {}) {
-    uploading.value = true
-    uploadProgress.value = 0
-    isIndexing.value = false
-    indexingProgress.value = 0
-    uploadQueueCurrent.value = queueCurrent
-    uploadQueueTotal.value = queueTotal
-    uploadResult.value = null
-    try {
-      // Phase 1: file transfer — XHR progress callback
-      const result = await uploadFile(file, (pct) => { uploadProgress.value = pct })
-      // Phase 2: indexing — start immediately, no gap
-      isIndexing.value = true
-      uploading.value = false
-      await _animateIndexing()
-      isIndexing.value = false
-      indexingProgress.value = 100
-      await refreshStats()
-      await fetchKnowledgeBases()
-      uploadResult.value = result
-      return result
-    } catch (err) {
-      uploadResult.value = { error: err.response?.data?.error || err.message }
-      throw err
-    } finally {
-      uploading.value = false
-      isIndexing.value = false
-    }
-  }
-
-  function _animateIndexing() {
-    return new Promise((resolve) => {
-      indexingProgress.value = 0
-      const step = () => {
-        // Ease toward 95 quickly, hold there until resolved
-        if (indexingProgress.value < 95) {
-          indexingProgress.value = Math.min(95, indexingProgress.value + 5)
-          setTimeout(step, 80)
-        } else {
-          resolve()
-        }
-      }
-      step()
-    })
-  }
-
-  async function refreshStats() {
-    try {
-      indexStats.value = await getDocuments()
-    } catch { /* ignore */ }
-  }
-
-  async function fetchKnowledgeBases() {
-    try {
-      const data = await getKnowledgeBases()
-      knowledgeBases.value = data.knowledge_bases || []
-    } catch { /* ignore */ }
-  }
-
-  async function removeKnowledgeBase(fileHash) {
-    // clear any prior upload information so user can start fresh
-    resetUploadResult()
-    await deleteKnowledgeBase(fileHash)
-    await fetchKnowledgeBases()
-    await refreshStats()
-  }
-
-  async function clearIndex() {
-    await clearDocuments()
-    knowledgeBases.value = []
-    await refreshStats()
-    resetUploadResult()
-  }
-
-  function resetUploadResult() {
-    uploadResult.value = null
-  }
-
   async function fetchProviders() {
     try {
       const data = await getProviders()
@@ -320,18 +229,16 @@ export const useRagStore = defineStore('rag', () => {
   return {
     // provider state
     llmProvider, ollamaModel, openaiModel, availableProviders,
-    // document index
+    // query state
     query, isRunning, stageStatuses, events, retryCount,
     answer, sources, metadata, error, isHistoryResult,
-    indexStats, knowledgeBases, uploading, uploadProgress, indexingProgress, isIndexing,
-    uploadQueueCurrent, uploadQueueTotal, uploadResult,
     // chat history
     chatHistory,
     // computed
-    hasResult, hasDocuments,
+    hasResult,
     // actions
-    runQuery, abortQuery, uploadDocument, refreshStats, clearIndex, resetPipeline,
-    fetchProviders, setOllamaModel, setOpenaiModel, fetchKnowledgeBases, removeKnowledgeBase,
-    resetUploadResult, loadHistoryItem, deleteHistoryItem, clearChatHistory,
+    runQuery, abortQuery, resetPipeline,
+    fetchProviders, setOllamaModel, setOpenaiModel,
+    loadHistoryItem, deleteHistoryItem, clearChatHistory,
   }
 })

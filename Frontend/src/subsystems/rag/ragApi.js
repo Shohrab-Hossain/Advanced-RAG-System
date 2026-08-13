@@ -1,8 +1,8 @@
 /**
- * API Service
- * -----------
- * All HTTP calls to the Flask backend.
- * query() is handled differently — it returns an EventSource,
+ * RAG API
+ * -------
+ * HTTP calls for the query capability.
+ * streamQuery() is handled differently — it returns a controller,
  * not a promise, because the response is an SSE stream.
  */
 
@@ -15,30 +15,6 @@ const http = axios.create({ baseURL: BASE })
 
 // ── REST calls ────────────────────────────────────────────────────────────────
 
-export async function uploadFile(file, onProgress) {
-  const form = new FormData()
-  form.append('file', file)
-  const { data } = await http.post('/api/upload', form, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-    onUploadProgress: (evt) => {
-      if (onProgress && evt.total) {
-        onProgress(Math.round((evt.loaded / evt.total) * 100))
-      }
-    },
-  })
-  return data
-}
-
-export async function getDocuments() {
-  const { data } = await http.get('/api/documents')
-  return data
-}
-
-export async function clearDocuments() {
-  const { data } = await http.delete('/api/clear')
-  return data
-}
-
 export async function healthCheck() {
   const { data } = await http.get('/api/health')
   return data
@@ -46,16 +22,6 @@ export async function healthCheck() {
 
 export async function getProviders() {
   const { data } = await http.get('/api/providers')
-  return data
-}
-
-export async function getKnowledgeBases() {
-  const { data } = await http.get('/api/knowledge-bases')
-  return data
-}
-
-export async function deleteKnowledgeBase(fileHash) {
-  const { data } = await http.delete(`/api/knowledge-bases/${fileHash}`)
   return data
 }
 

@@ -29,7 +29,7 @@
 </template>
 
 <script setup>
-import { useUiStore } from '../stores/ui'
+import { useUiStore } from '../../../store'
 const ui = useUiStore()
 </script>
 
