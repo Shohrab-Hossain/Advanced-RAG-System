@@ -7,7 +7,9 @@ module.exports = defineConfig({
     port: 8080,
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        // dev.py picks the backend port at launch and passes it in here.
+        // The literal fallback keeps a bare `npm run serve` working on its own.
+        target: process.env.DEV_API_TARGET || 'http://localhost:5000',
         changeOrigin: true,
       },
     },
