@@ -9,7 +9,7 @@
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { uploadFile, getDocuments, clearDocuments, getKnowledgeBases, deleteKnowledgeBase } from './kbApi'
+import { uploadFile, getDocuments, clearDocuments, getKnowledgeBases, deleteKnowledgeBase } from '../services/kbApi'
 
 export const useKbStore = defineStore('knowledgeBase', () => {
   // ── Document index ──────────────────────────────────────────────────────────

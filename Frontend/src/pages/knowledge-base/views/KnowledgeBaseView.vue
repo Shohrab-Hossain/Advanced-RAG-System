@@ -35,7 +35,7 @@
 
 <script setup>
 import { computed, onMounted } from 'vue'
-import { useKbStore } from '../../../subsystems/knowledge-base/kbStore'
+import { useKbStore } from '../../../store/kbStore'
 import { useUiStore } from '../../../store'
 import UploadPanel from '../components/UploadPanel/UploadPanel.vue'
 import IndexStats from '../components/IndexStats/IndexStats.vue'

@@ -105,10 +105,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { useRagStore } from '../../../subsystems/rag/ragStore'
-import { useKbStore } from '../../../subsystems/knowledge-base/kbStore'
+import { useRagStore } from '../../../store/ragStore'
+import { useKbStore } from '../../../store/kbStore'
 import { useUiStore } from '../../../store'
-import { healthCheck } from '../../../subsystems/rag/ragApi'
+import { healthCheck } from '../../../services/ragApi'
 
 const store = useRagStore()
 const kb = useKbStore()

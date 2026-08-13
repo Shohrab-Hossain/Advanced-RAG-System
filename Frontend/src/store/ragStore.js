@@ -10,7 +10,7 @@
 
 import { defineStore } from 'pinia'
 import { ref, reactive, computed } from 'vue'
-import { streamQuery, getProviders } from './ragApi'
+import { streamQuery, getProviders } from '../services/ragApi'
 
 // Pipeline stage definitions (order matters — used for display)
 export const STAGES = [

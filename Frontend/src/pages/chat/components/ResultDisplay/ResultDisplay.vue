@@ -93,7 +93,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { marked } from 'marked'
-import { useRagStore } from '../../../../subsystems/rag/ragStore'
+import { useRagStore } from '../../../../store/ragStore'
 import SourceCard from './SourceCard.vue'
 import FileTypeIcon from '../../../../shared/components/FileTypeIcon/FileTypeIcon.vue'
 

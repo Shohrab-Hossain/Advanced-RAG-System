@@ -115,8 +115,8 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useRagStore } from '../../../subsystems/rag/ragStore'
-import { useKbStore } from '../../../subsystems/knowledge-base/kbStore'
+import { useRagStore } from '../../../store/ragStore'
+import { useKbStore } from '../../../store/kbStore'
 import ChatHistorySidebar from '../components/ChatHistorySidebar/ChatHistorySidebar.vue'
 import QueryInput from '../components/QueryInput/QueryInput.vue'
 import PipelineTracker from '../components/PipelineTracker/PipelineTracker.vue'

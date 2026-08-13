@@ -72,7 +72,7 @@
 
 <script setup>
 import { ref, nextTick, watch } from 'vue'
-import { useRagStore } from '../../../../subsystems/rag/ragStore'
+import { useRagStore } from '../../../../store/ragStore'
 
 const store = useRagStore()
 const localQuery = ref(store.query)   // initialise from store so nav away/back preserves text

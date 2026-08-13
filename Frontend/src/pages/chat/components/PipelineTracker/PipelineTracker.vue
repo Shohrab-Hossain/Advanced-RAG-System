@@ -56,7 +56,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { useRagStore, STAGES } from '../../../../subsystems/rag/ragStore'
+import { useRagStore, STAGES } from '../../../../store/ragStore'
 import StageRow from './StageRow.vue'
 
 const store = useRagStore()

@@ -83,7 +83,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { useKbStore } from '../../../../subsystems/knowledge-base/kbStore'
+import { useKbStore } from '../../../../store/kbStore'
 import { useUiStore } from '../../../../store'
 
 defineProps({

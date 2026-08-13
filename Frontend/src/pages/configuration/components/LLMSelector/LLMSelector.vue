@@ -166,7 +166,7 @@
 
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { useRagStore } from '../../../../subsystems/rag/ragStore'
+import { useRagStore } from '../../../../store/ragStore'
 
 const store = useRagStore()
 const checking = ref(false)

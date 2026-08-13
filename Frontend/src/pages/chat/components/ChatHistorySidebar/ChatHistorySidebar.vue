@@ -83,7 +83,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
-import { useRagStore } from '../../../../subsystems/rag/ragStore'
+import { useRagStore } from '../../../../store/ragStore'
 import { useUiStore } from '../../../../store'
 import { formatTime } from './chatHistorySidebar'
 
