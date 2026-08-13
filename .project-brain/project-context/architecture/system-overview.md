@@ -26,9 +26,9 @@ Flask server. There is no shared database, no message broker, and no build-time 
 
 1. The user submits in `QueryInput.vue`; `ragStore.runQuery()` resets all stage statuses and calls
    `streamQuery()`.
-2. `services/api.js` POSTs `{query, provider, model?}` to `/api/query` with `fetch` (a POST body rules out
-   `EventSource`), then reads `res.body.getReader()` and splits the stream on `\n`, parsing every line that
-   starts with `data: `.
+2. `subsystems/rag/ragApi.js:42-50` POSTs to `/api/query` with `fetch` (a POST body rules out
+   `EventSource`) — the body is `{query, provider}`, with `model` added **only when truthy** — then reads
+   `res.body.getReader()` and splits the stream on `\n`, parsing every line that starts with `data: `.
 3. The Flask route validates the body, mints a UUID `session_id`, creates that session's queue, builds the
    full `initial_state`, and starts a **daemon thread** running `rag_graph.invoke(initial_state)`.
 4. The route's generator blocks on `event_queue.get(timeout=180)` and yields each event as

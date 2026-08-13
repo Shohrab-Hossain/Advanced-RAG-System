@@ -18,6 +18,7 @@ Every architecture decision on record, newest number last. Add a row in the same
 | [004](entries/004-embedded-file-backed-stores.md) | Embedded, file-backed stores | 2026-08-13 | accepted | Chroma `PersistentClient` + two pickles instead of any database server |
 | [005](entries/005-dual-llm-provider.md) | Dual LLM provider (OpenAI + Ollama) | 2026-08-13 | accepted | Provider chosen per request so the system can run fully local |
 | [006](entries/006-dev-launcher-env-injected-ports.md) | Dev launcher owns both ports, injected as child env | 2026-08-13 | accepted | `dev.py` picks both ports before spawn and injects them — no file written, no port scraped |
+| [007](entries/007-ownership-based-frontend-tree.md) | `Frontend/src/` sorted by ownership, not by kind | 2026-08-13 | accepted | A folder exists because something owns what is in it — `store/` · `shared/` · `subsystems/` · `pages/`, plus the old→new path map |
 
 <br>
 
@@ -26,9 +27,14 @@ Every architecture decision on record, newest number last. Add a row in the same
 <br>
 
 > [!IMPORTANT]
-> **These five records were reconstructed on 2026-08-13** from the code, not written at the time each
-> decision was made. Their *Context*, *Decision*, and *Consequences* are grounded in what the repository
-> actually contains; where the original reasoning or the alternatives weighed are not evidenced anywhere in
-> the repository, the record says so explicitly with a `TODO:`. Confirm those with the project owner before
-> treating them as recorded history. Every ADR written from here on should be captured **at the moment the
-> decision is made**, which is the only way the *why* survives.
+> **Records 001–005 — and only those five — were reconstructed on 2026-08-13** from the code, not written
+> at the time each decision was made. Their *Context*, *Decision*, and *Consequences* are grounded in what
+> the repository actually contains; where the original reasoning or the alternatives weighed are not
+> evidenced anywhere in the repository, the record says so explicitly with a `TODO:`. Confirm those with the
+> project owner before treating them as recorded history — in particular, **never cite their *Alternatives
+> considered* as a record of what was actually weighed.**
+>
+> **006 and 007 are contemporaneous** — each was decided and written down in the same session, and each
+> carries a *"Recorded at decision time"* banner instead. Their alternatives **are** a record of what was
+> argued. This banner does not apply to them, and must not be extended to any later entry: every ADR from
+> here on is captured **at the moment the decision is made**, which is the only way the *why* survives.

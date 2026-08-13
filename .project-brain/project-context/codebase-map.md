@@ -29,7 +29,7 @@ rejected are recorded in
 [ADR-006](../decisions/ADRs/entries/006-dev-launcher-env-injected-ports.md).
 
 The working tree **is** a git repository — branch `feature`, remote `origin` →
-`git@github.com:Shohrab-Hossain/Advanced-RAG-System.git`, 74 tracked files.
+`git@github.com:Shohrab-Hossain/Advanced-RAG-System.git`.
 
 <br>
 
@@ -99,13 +99,13 @@ rag_pipeline/
 Every package has an `__init__.py`.
 
 > [!IMPORTANT]
-> **Runtime data lands in `Backend/src/data/`, not `Backend/data/` — and it is not ignored.**
-> `Config.DATA_ROOT` is the relative literal `"./data"` (`config.py:44`), resolved against the **process
-> working directory**, and the backend runs from `Backend/src`. `.gitignore:29-30` ignore
-> `Backend/data/databases/` and `Backend/data/uploads/`, which match nothing — `Backend/data/` does not
-> exist. The consequence is live:
-> `Backend/src/data/databases/vector_db/chroma_db/chroma.sqlite3` is **tracked in git** and grows with
-> every ingest. Why the directory is chosen at import time, and what `dev.py` does about it, is in
+> **Runtime data lands in `Backend/src/data/`, not `Backend/data/`.** `Config.DATA_ROOT` is the relative
+> literal `"./data"` (`config.py:44`), resolved against the **process working directory**, and the backend
+> runs from `Backend/src` — so the live corpus (uploads + the three stores) is inside the source tree.
+> Both locations are gitignored: `.gitignore:32` covers `Backend/src/data/` and `.gitignore:33` covers
+> `Backend/data/` for the case where someone starts the process one level up, with the reasoning recorded
+> in a comment at `.gitignore:29-31`. Nothing under either path is tracked. Why the directory is chosen at
+> import time, and what `dev.py` does about it, is in
 > [`runtime/backend-startup/`](runtime/backend-startup/README.md).
 
 <br>
@@ -115,7 +115,7 @@ Every package has an `__init__.py`.
 ```
 Frontend/
 │
-├── 📁 documentation/         Human engineering docs (separate layer — read, never link)
+├── 📁 Documentation/         Human engineering docs (separate layer — read, never link)
 │   ├── 📄 components.md       Every component — props, emits, behaviour
 │   ├── 📄 state.md            Stores, API service, SSE, history
 │   └── 📄 README.md           Views, structure, setup
@@ -123,24 +123,34 @@ Frontend/
 ├── 📁 public/
 │   └── 📄 index.html          Title/meta/OG tags, Google Fonts links, #app mount
 │
-├── 📁 src/
+├── 📁 src/                    30 files — sorted by OWNERSHIP, not by kind
 │   ├── 📁 assets/
 │   │   └── 📄 main.css         Tailwind entry + .card/.btn-*/.prose-rag layers
-│   │
-│   ├── 📁 components/          12 components (PipelineTracker, StageRow,
-│   │                           ResultDisplay, SourceCard, LLMSelector…)
 │   │
 │   ├── 📁 router/
 │   │   └── 📄 index.js         4 lazy routes, HTML5 history mode
 │   │
-│   ├── 📁 services/
-│   │   └── 📄 api.js           All HTTP calls + the SSE stream reader
+│   ├── 📁 store/
+│   │   └── 📄 index.js         The 'ui' store ONLY — theme + global modal (owned by no capability)
 │   │
-│   ├── 📁 stores/
-│   │   ├── 📄 rag.js           STAGES, query lifecycle, index, result, history
-│   │   └── 📄 ui.js            Theme + promise-based modal
+│   ├── 📁 subsystems/          One folder per capability: its store + its own axios client
+│   │   ├── 📁 rag/
+│   │   │   ├── 📄 ragStore.js      'rag' — STAGES, provider, query lifecycle, result, history
+│   │   │   └── 📄 ragApi.js        /api/query (SSE), /api/providers, /api/health
+│   │   └── 📁 knowledge-base/
+│   │       ├── 📄 kbStore.js       'knowledgeBase' — index stats, KB list, upload progress
+│   │       └── 📄 kbApi.js         upload, documents, clear, list KBs, delete KB
 │   │
-│   ├── 📁 views/               HomeView, ChatView, KnowledgeBaseView, ConfigView
+│   ├── 📁 shared/components/   Used by more than one page — NavBar/, ModalDialog/, FileTypeIcon/
+│   │
+│   ├── 📁 pages/               One folder per route
+│   │   ├── 📁 home/            views/HomeView.vue
+│   │   ├── 📁 chat/            views/ (ChatView.vue + chatView.js) +
+│   │   │                       components/ ChatHistorySidebar/ PipelineTracker/
+│   │   │                                   QueryInput/ ResultDisplay/
+│   │   ├── 📁 knowledge-base/  views/ (KnowledgeBaseView.vue + knowledgeBaseView.js) +
+│   │   │                       components/ UploadPanel/ IndexStats/ KnowledgeBaseList/
+│   │   └── 📁 configuration/   views/ConfigView.vue + components/LLMSelector/
 │   │
 │   ├── 📄 App.vue             Shell: NavBar + RouterView transition + ModalDialog
 │   └── 📄 main.js             createApp → Pinia → router → mount
@@ -153,6 +163,13 @@ Frontend/
 └── 📄 README.md              Quick start, stack, docs index
 ```
 
+Each component sits in a folder of its own name (`NavBar/NavBar.vue`), with any satellite used only by it
+inside that folder — `PipelineTracker/StageRow.vue`, `ResultDisplay/SourceCard.vue`. Pure logic and
+extracted CSS sit beside their `.vue` as camelCase siblings (`chatHistorySidebar.js`,
+`chatHistorySidebar.css`). Why the tree is sorted this way, and the kind-first alternative that was
+rejected, is in
+[ADR-007](../decisions/ADRs/entries/007-ownership-based-frontend-tree.md).
+
 <br>
 
 ## Quick lookup
@@ -164,8 +181,11 @@ Frontend/
 | What a node does | `Backend/src/rag_pipeline/{generation,retrieval,ranking}/<name>.py` |
 | A setting or default | `Backend/src/config.py` (plus the `os.getenv` reads in node modules) |
 | How a store persists | `Backend/src/rag_pipeline/retrieval/<kind>/*_store.py` |
-| The SSE event contract | `Backend/src/rag_pipeline/core/events.py` (producer) + `Frontend/src/services/api.js` (consumer) |
-| Client state or the stage list | `Frontend/src/stores/rag.js` |
+| The SSE event contract | `Backend/src/rag_pipeline/core/events.py` (producer) + `Frontend/src/subsystems/rag/ragApi.js:40` (consumer — `streamQuery`) |
+| The stage list, or how an SSE event mutates the UI | `Frontend/src/subsystems/rag/ragStore.js` — `STAGES` at `:16-25`, `_applyEvent` at `:84` |
+| Client state | whichever owner holds it: `subsystems/rag/ragStore.js` (query, result, provider, history) · `subsystems/knowledge-base/kbStore.js` (index stats, KB list, upload progress) · `store/index.js` (theme, modal) |
+| A frontend HTTP call | `Frontend/src/subsystems/rag/ragApi.js` (query, providers, health) or `Frontend/src/subsystems/knowledge-base/kbApi.js` (upload, documents, clear, KBs) |
 | A design token | `Frontend/tailwind.config.js` + `Frontend/src/assets/main.css` |
-| A page | `Frontend/src/views/<Name>View.vue` |
+| A page | `Frontend/src/pages/<page>/views/<Name>View.vue` |
+| A component | `Frontend/src/shared/components/<Name>/` if more than one page uses it, else `Frontend/src/pages/<page>/components/<Name>/` |
 | How dev ports are chosen and injected | `dev.py` (repository root) + `Frontend/vue.config.js` |

@@ -128,7 +128,8 @@ hand-written `@layer utilities` classes in `main.css`. The utilities layer wins 
 
 ## Dark/light mechanism
 
-`stores/ui.js` is the whole implementation:
+`store/index.js` is the whole implementation — the app-shell store, id `'ui'` (`:8`), exported as
+`useUiStore`:
 
 ```js
 function applyTheme(t) { document.documentElement.classList.toggle('dark', t === 'dark') }

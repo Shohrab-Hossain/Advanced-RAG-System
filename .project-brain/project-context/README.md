@@ -65,7 +65,7 @@ steps themselves live in [`build-from-scratch.md`](build-from-scratch.md).
 | [`overview/`](overview/README.md) | The mission and non-goals, the domain glossary, the tech stack with the reason for each piece |
 | [`architecture/`](architecture/README.md) | System topology, the backend module graph, the frontend component graph, and the boundary between them |
 | [`runtime/`](runtime/README.md) | The dynamic behaviour — backend startup and its silent traps, the query pipeline's node-by-node flow and retry loop, the SSE event bus, and the ingestion/indexing flow |
-| [`features/`](features/README.md) | One folder per feature: what it does, which files implement it, what it depends on, and its gotchas |
+| [`features/`](features/README.md) | One folder per feature: what it does, which files implement it, what it depends on, and its gotchas — plus the map of which owner in `Frontend/src/` each feature lives under |
 | [`api/`](api/README.md) | The wire contracts — every HTTP endpoint's request/response shape, and every SSE event type's payload |
 | [`data/`](data/README.md) | The data model — the chunk/document record, the knowledge-base registry, and the `RAGState` object that flows through the pipeline |
 | [`design/`](design/README.md) | The visual identity — palette, typography, spacing, radii, shadows, motion, dark/light handling, with real token values |

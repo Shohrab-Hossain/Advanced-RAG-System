@@ -14,8 +14,16 @@ tradeoff — without restarting or reconfiguring the server.
 | Ollama probe | `Backend/src/rag_pipeline/encoding/llm.py` → `check_ollama()` |
 | Availability endpoint | `Backend/src/app.py` → `GET /api/providers` |
 | Per-run propagation | `RAGState.provider`, `RAGState.ollama_model` |
-| Selection UI | `Frontend/src/components/LLMSelector.vue`, `Frontend/src/views/ConfigView.vue` |
-| Client state | `Frontend/src/stores/rag.js` → `llmProvider`, `openaiModel`, `ollamaModel`, `availableProviders`, `fetchProviders()` |
+| Selection UI | `Frontend/src/pages/configuration/components/LLMSelector/LLMSelector.vue`, `Frontend/src/pages/configuration/views/ConfigView.vue` |
+| Client state | `Frontend/src/subsystems/rag/ragStore.js:32-38` → `llmProvider`, `ollamaModel`, `openaiModel`, `availableProviders`; `fetchProviders()` at `:200-219` |
+| Availability fetch | `Frontend/src/subsystems/rag/ragApi.js:23` → `getProviders()` |
+| Active-model badge | `Frontend/src/shared/components/NavBar/NavBar.vue:44-61`, computed at `:131-138` |
+
+**Why the client half lives in the `rag` subsystem, not a `configuration` one:** the provider is not a
+setting the app stores, it is a **field on every query** — `runQuery` reads `llmProvider` / `ollamaModel` /
+`openaiModel` and puts them on the `POST /api/query` body (`ragStore.js:128-131` → `ragApi.js:42-43`). The
+selector is a UI over the RAG store, so `getProviders` sits beside `streamQuery` in `ragApi.js` and
+`kbApi.js` never learns the provider exists.
 
 **Inputs:** a provider id (`"openai"` | `"ollama"`) and an optional model name.
 **Outputs:** every LLM-calling node in the run uses that provider/model.
@@ -40,10 +48,15 @@ tradeoff — without restarting or reconfiguring the server.
 - `safe_json_parse()` recovers JSON from model output in three escalating attempts: direct
   `json.loads`, a ```` ```json ```` fence extraction, then the first `{...}` block. It raises `ValueError`
   with a 300-char excerpt if all three fail — this is what makes smaller local models usable.
-- `LLMSelector.vue` fetches providers on mount and **polls every 15 seconds while Ollama is unavailable**,
-  stopping the interval on unmount. `fetchProviders()` in the store auto-selects the server's `default`
-  provider if available, else the first available one, and pre-selects the server's default OpenAI model.
-- `ConfigView.vue` presents the tradeoff as fixed pro/con lists: OpenAI — best reasoning, cost-effective
+- `LLMSelector.vue` fetches providers on mount and **polls every 15 seconds while Ollama is unavailable**
+  (`:196-200`), stopping the interval on unmount (`:203`). Picking a provider also pre-selects a model when
+  none is chosen yet (`select()`, `:187-191`). `fetchProviders()` in the store auto-selects the server's
+  `default` provider if available, else the first available one, and pre-selects the server's default
+  OpenAI model.
+- `NavBar.vue` shows the resolved active model as a badge, falling back through
+  *user choice → server default → first listed* (`activeModel`, `:131-138`), and swaps it for an amber
+  "No API key" warning when OpenAI is selected but unavailable (`:44-52`).
+- `ConfigView.vue` presents the tradeoff as fixed pro/con lists (`:125-137`): OpenAI — best reasoning, cost-effective
   `gpt-4o-mini`, but needs `OPENAI_API_KEY` and sends data to OpenAI; Ollama — fully private, no API costs,
   but needs Ollama running and quality varies by model size (7B+ recommended).
 

@@ -72,5 +72,5 @@ add, move, or rename a doc, update the owning area's `README.md` — and [`READM
 the structure changed — in the same edit. Anything you could not verify from the code gets an explicit
 `TODO:` marker, not a plausible guess.
 
-`Backend/documentation/` and `Frontend/documentation/` are a separate, publishable layer. Read them as
+`Backend/documentation/` and `Frontend/Documentation/` are a separate, publishable layer. Read them as
 input; never link to them from here.

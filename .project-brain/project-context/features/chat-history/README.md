@@ -3,11 +3,25 @@
 **Purpose:** keep a browser-local record of past queries so a user can revisit an answer — including the
 pipeline visualisation it produced — without re-running it.
 
-**Entry point:** the history sidebar in `ChatView.vue`.
+**Entry point:** the `ChatHistorySidebar` overlay, mounted by `ChatView.vue:4` and toggled from the
+header button at `:24`.
 
-**Implemented in:** `Frontend/src/stores/rag.js` (`chatHistory`, `loadHistoryItem`, `deleteHistoryItem`,
-`clearChatHistory`, `_loadHistory`, `_persistHistory`) and `Frontend/src/views/ChatView.vue` (sidebar,
-relative-time formatting, active-item highlighting).
+**Implemented in:**
+
+| Concern | File |
+|---|---|
+| State + persistence | `Frontend/src/subsystems/rag/ragStore.js:55-62` (`HISTORY_KEY`, `_loadHistory`, `chatHistory`, `_persistHistory`) |
+| Entry write | `Frontend/src/subsystems/rag/ragStore.js:141-153` — inside `runQuery`'s `onDone` |
+| Load / delete / clear | `Frontend/src/subsystems/rag/ragStore.js:170-198` (`loadHistoryItem`, `deleteHistoryItem`, `clearChatHistory`) |
+| Sidebar UI + confirms | `Frontend/src/pages/chat/components/ChatHistorySidebar/ChatHistorySidebar.vue` |
+| Relative-time formatting (pure) | `Frontend/src/pages/chat/components/ChatHistorySidebar/chatHistorySidebar.js:8` — `formatTime` |
+| Overlay transitions | `Frontend/src/pages/chat/components/ChatHistorySidebar/chatHistorySidebar.css` |
+
+The sidebar is the brain's clearest example of the **component-folder triple** — `.vue` + a camelCase
+pure-logic sibling + a split CSS file pulled in as `<style scoped src="./chatHistorySidebar.css">`
+(`ChatHistorySidebar.vue:132`). The view keeps only what it owns: the `sidebarOpen` ref
+(`ChatView.vue:129`), the toggle button with its entry-count badge (`:24-37`), and the `:open` / `@close`
+wiring (`:4`). Everything else — the list, the highlight, the confirmations — belongs to the component.
 
 **Storage:** `localStorage` key **`rag-chat-history`**, a JSON array, **newest first**, capped at **50
 entries** on every write (`chatHistory.value.slice(0, 50)`). Loading is fault-tolerant: a parse failure
@@ -32,10 +46,17 @@ yields `[]` rather than throwing.
   sets `isHistoryResult = true`, and replays the saved `stageStatuses` into the tracker. For an older entry
   with no `stageStatuses` snapshot, every stage is set to `complete` with the message
   `"Pipeline completed"` so the tracker is not blank.
-- `ChatView.vue` formats timestamps relatively — `Just now`, `Nm ago`, `Nh ago`, then a locale
-  month/day — and highlights the newest entry automatically when a fresh (non-history) query completes,
-  via a watcher on `chatHistory[0]?.id`.
-- `isHistoryResult` distinguishes a replayed result from a live one so the UI can label it.
+- `formatTime()` (`chatHistorySidebar.js:8`) renders each entry's age relatively — `Just now`, `Nm ago`,
+  `Nh ago`, then a locale month/day.
+- The sidebar highlights the newest entry automatically when a fresh (non-history) query completes, via a
+  watcher on `store.chatHistory[0]?.id` guarded by `!store.isHistoryResult`
+  (`ChatHistorySidebar.vue:101-105`); `activeHistoryId` is component-local state, not store state.
+  Clicking an entry loads it and closes the overlay (`:107-111`).
+- Both destructive actions are gated behind `ui.confirm()` inside the sidebar (`:113-129`): *"Delete this
+  chat from history?"* per entry, and *"Delete all chat history? This cannot be undone."* for the header's
+  "Clear all" — both `danger`, and both clear `activeHistoryId` when they apply to it.
+- `isHistoryResult` distinguishes a replayed result from a live one so the UI can label it — the tracker
+  shows a "from history" pill (`PipelineTracker.vue:9-15`).
 
 **Depends on:** the browser's `localStorage` and the result/stage state produced by
 [`self-rag-pipeline`](../self-rag-pipeline/README.md) and rendered by

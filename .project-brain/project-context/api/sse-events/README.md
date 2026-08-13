@@ -2,8 +2,11 @@
 
 Every frame streamed by `POST /api/query` is `data: {"type": "<type>", "data": {…}}\n\n`. There is no
 `event:` or `id:` field — the type lives in the payload. Producers are the pipeline nodes via
-`emit(session_id, type, data)`; the consumer is `streamQuery()` in `Frontend/src/services/api.js`, which
-routes `done`, `stream_end`, and `error` specially and passes everything else to `_applyEvent`.
+`emit(session_id, type, data)`; the consumer is `streamQuery()` in
+`Frontend/src/subsystems/rag/ragApi.js:40`, which routes `done`, `stream_end`, and `error` specially and
+passes everything else to `_applyEvent` (`subsystems/rag/ragStore.js`). This stream belongs to the **RAG
+subsystem only** — the knowledge-base client (`subsystems/knowledge-base/kbApi.js`) is plain REST and
+never touches SSE.
 
 Every stage event carries **`data.stage`**, one of: `planner`, `retrieval`, `external_tools`,
 `aggregator`, `reranker`, `compressor`, `reasoning`, `reflection`.

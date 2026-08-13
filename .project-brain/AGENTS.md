@@ -65,6 +65,6 @@ source of the ordered rebuild steps. Nothing else in this brain carries those st
   to anyone reading top-down.
 - **Keep this cookbook honest.** If a bucket or area is added, renamed, or removed, refresh the affected
   `README.md` + `AGENTS.md` so the self-description stays true.
-- **Never link out to `Backend/documentation/` or `Frontend/documentation/`.** Those are the separate,
+- **Never link out to `Backend/documentation/` or `Frontend/Documentation/`.** Those are the separate,
   publishable engineering-report layer. Read them freely as input, but write the brain's version from
   the source code — this folder is loaded into context every session and must stay self-contained.

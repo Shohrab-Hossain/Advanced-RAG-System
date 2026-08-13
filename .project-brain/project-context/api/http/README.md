@@ -1,22 +1,37 @@
 # HTTP endpoints
 
-All routes are registered in `create_app()` in `Backend/src/app.py`. Client wrappers live in
-`Frontend/src/services/api.js`.
+All eight routes are registered in `create_app()` in `Backend/src/app.py` — one factory, one file.
+
+The **client side is split by domain across two modules**, one per frontend subsystem, and every route
+belongs to exactly one of them. There is no shared api module and neither imports the other:
+
+| Client module | Owns | Routes |
+|---|---|---|
+| `Frontend/src/subsystems/rag/ragApi.js` | asking the pipeline a question, and what it needs to ask | 3 — `/api/query`, `/api/providers`, `/api/health` |
+| `Frontend/src/subsystems/knowledge-base/kbApi.js` | the corpus the pipeline searches | 5 — `/api/upload`, `/api/documents`, `/api/clear`, `/api/knowledge-bases`, `/api/knowledge-bases/<file_hash>` |
+
+`/api/providers` sits with the RAG client rather than a configuration one because the chosen provider
+**rides the query itself** — it is a field of the `/api/query` body, not standalone settings state.
 
 <br>
 
 ## Summary
 
-| Method | Path | Purpose | Client fn |
-|---|---|---|---|
-| POST | `/api/query` | Run the pipeline, stream SSE | `streamQuery()` |
-| POST | `/api/upload` | Upload + index a document | `uploadFile()` |
-| GET | `/api/documents` | Global index statistics | `getDocuments()` |
-| DELETE | `/api/clear` | Wipe all indexed content | `clearDocuments()` |
-| GET | `/api/knowledge-bases` | List uploaded KBs | `getKnowledgeBases()` |
-| DELETE | `/api/knowledge-bases/<file_hash>` | Delete one KB | `deleteKnowledgeBase()` |
-| GET | `/api/providers` | LLM providers + availability | `getProviders()` |
-| GET | `/api/health` | Liveness check | `healthCheck()` |
+| Method | Path | Purpose | Client fn | Client module |
+|---|---|---|---|---|
+| POST | `/api/query` | Run the pipeline, stream SSE | `streamQuery()` `:40` | `ragApi.js` |
+| POST | `/api/upload` | Upload + index a document | `uploadFile()` `:17` | `kbApi.js` |
+| GET | `/api/documents` | Global index statistics | `getDocuments()` `:33` | `kbApi.js` |
+| DELETE | `/api/clear` | Wipe all indexed content | `clearDocuments()` `:38` | `kbApi.js` |
+| GET | `/api/knowledge-bases` | List uploaded KBs | `getKnowledgeBases()` `:45` | `kbApi.js` |
+| DELETE | `/api/knowledge-bases/<file_hash>` | Delete one KB | `deleteKnowledgeBase()` `:50` | `kbApi.js` |
+| GET | `/api/providers` | LLM providers + availability | `getProviders()` `:23` | `ragApi.js` |
+| GET | `/api/health` | Liveness check | `healthCheck()` `:18` | `ragApi.js` |
+
+Eight routes, eight exports, 3 + 5. Each module builds its **own** axios client from its own read of
+`VUE_APP_API_URL` (`ragApi.js:12-14`, `kbApi.js:11-13`) — the base-URL behaviour is identical, there are
+simply two construction sites. Adding a route means adding it to the subsystem that owns the capability,
+never to a shared client.
 
 <br>
 

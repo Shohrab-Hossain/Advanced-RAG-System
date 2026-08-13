@@ -9,7 +9,7 @@ Where a new file goes, and the layering that must not be broken.
 ```
 Advanced RAG System/
 ├── Backend/     Python: Flask API + rag_pipeline package + its own documentation/
-├── Frontend/    JavaScript: Vue 3 SPA + its own documentation/
+├── Frontend/    JavaScript: Vue 3 SPA + its own Documentation/
 ├── dev.py       Root dev launcher — starts, wires, and tears down both halves
 ├── README.md    Human front door
 ├── .readme-lib/ Doc assets — diagram sources + rendered SVGs
@@ -19,7 +19,9 @@ Advanced RAG System/
 The two halves remain independent projects that share only the HTTP contract. There is no root
 `package.json`, no monorepo tool, no workspace config — each is still installed and built from its own
 folder. `dev.py` does not change that: it *runs* both together without coupling their builds, and each half
-still starts standalone. Each half owns its own `README.md` and `documentation/` folder.
+still starts standalone. Each half owns its own `README.md` and its own docs folder — **`Backend/documentation/`
+(lowercase) and `Frontend/Documentation/` (capital `D`)**. The casing genuinely differs on disk; match the
+half you are in rather than normalising.
 
 **Where a root-level dev script goes:** flat at the repository root, as a single file — it belongs to
 neither half, so it lives above both. It must be runnable **before** either half is installed: `dev.py`
@@ -61,22 +63,54 @@ Layering rules that hold today and should keep holding:
 
 ## Frontend — where a new file goes
 
+`Frontend/src/` is sorted by **ownership, not by kind**: a folder exists because something owns what is
+inside it. There is no `components/`, `views/`, `services/`, or `stores/` bucket, and re-introducing one
+re-opens the decision recorded in
+[ADR-007](../../../decisions/ADRs/entries/007-ownership-based-frontend-tree.md). The question to answer
+before creating any frontend file is therefore **"who owns this?"** — one page, one capability, or nobody.
+
 | Adding… | Goes in |
 |---|---|
-| A new page | `src/views/<Name>View.vue` + a lazily-imported entry in `src/router/index.js` |
-| A reusable UI piece | `src/components/<Name>.vue` — flat, no sub-folders |
-| A new API call | `src/services/api.js` as an exported function returning `data` |
-| New shared state | an existing store in `src/stores/` — `rag.js` for anything about documents/queries/results, `ui.js` for presentation concerns |
-| A shared style pattern | `@layer components` in `src/assets/main.css`, not a `<style>` block |
+| A new page | `src/pages/<page>/views/<Name>View.vue` + a lazily-imported entry in `src/router/index.js`. Give the page a `views/` folder **even for a single view** — every page has one, so a reader never has to know which kind of page it is before guessing where the view sits |
+| A component owned by exactly one page | `src/pages/<page>/components/<Name>/<Name>.vue` |
+| A component used by more than one page | `src/shared/components/<Name>/<Name>.vue` |
+| A satellite used only by one component | inside that component's folder — `PipelineTracker/StageRow.vue`, `ResultDisplay/SourceCard.vue`. Do not promote it to `shared/` until a second owner actually exists |
+| Pure logic pulled out of a `.vue` | a camelCase sibling module beside it — `<Name>.vue` → `<name>.js` (`chatView.js`, `knowledgeBaseView.js`, `chatHistorySidebar.js`) |
+| Real CSS a component cannot express in Tailwind | a camelCase sibling `<name>.css`, attached as `<style scoped src="./<name>.css">` |
+| A new API call | the owning subsystem's client — `src/subsystems/rag/ragApi.js` or `src/subsystems/knowledge-base/kbApi.js` — as an exported function returning `data` |
+| New capability state | that capability's store — `src/subsystems/rag/ragStore.js` (provider, query, result, history) or `src/subsystems/knowledge-base/kbStore.js` (index stats, KB list, upload/indexing progress) |
+| New state that **no** capability owns | `src/store/index.js` (the `'ui'` store — theme, global modal) |
+| A whole new capability | `src/subsystems/<name>/` with a flat `<name>Store.js` + `<name>Api.js` pair inside |
+| A shared style pattern | `@layer components` in `src/assets/main.css` |
 | A design token | `tailwind.config.js` under `theme.extend` |
 
 Layering rules:
 
-- **Components do not call `services/api.js`** — they call store actions. (`NavBar.vue`'s `healthCheck`
-  import is the one accepted exception.)
-- **`services/api.js` holds no state**; it only shapes requests and responses.
-- **`stores/ui.js` knows nothing about RAG**; keep presentation concerns (theme, modal) out of `rag.js`.
-- **No component-scoped CSS.** Styling is Tailwind utilities plus the shared component layer.
+- **Components do not call an API module** — they call store actions. (`NavBar.vue`'s `healthCheck` import
+  from `subsystems/rag/ragApi` is the one accepted exception, `NavBar.vue:111`.)
+- **An API module holds no state**; it only shapes requests and responses.
+- **Subsystems never import each other.** `rag/` and `knowledge-base/` share nothing — not a store, not a
+  client, not a helper. Where one screen needs both, the *component* imports both stores; there are exactly
+  two such places (`ChatView.vue:118-119`, `NavBar.vue:108-111`), and a third is a signal that the boundary
+  is drawn in the wrong place.
+- **Each subsystem builds its own axios client** rather than importing a shared one, so
+  `VUE_APP_API_URL` is read twice (`ragApi.js:12`, `kbApi.js:11`). Accepted duplication: it is what keeps
+  the subsystems independent.
+- **`store/` at the root means *state owned by no single capability*** — it is not "where stores go". Put
+  capability state in that capability's subsystem, or the root store silently becomes the old global
+  `rag.js` again.
+- **A page-owned component never reaches back up into its page.** The view owns the data and hands each
+  child a finished view-model; children are presentational and communicate upward by emitting. The rule is
+  written into the source at `KnowledgeBaseView.vue:48-49`, and `IndexStats.vue` — which imports nothing at
+  all — is the reference example.
+- **Component-scoped CSS is allowed but rationed.** Tailwind utilities first, shared patterns promoted to
+  `@layer components` in `src/assets/main.css`; a `<style scoped>` block only where neither can express the
+  rule. Three exist (`ChatHistorySidebar.vue:132`, `ResultDisplay.vue:128`, `ModalDialog.vue:36`) — see
+  [`../code-style/README.md`](../code-style/README.md) for the exact form.
+- **There is no path alias.** No `@/` or equivalent is configured in `vue.config.js` or anywhere else, and
+  every import is relative — the deepest is `../../../../` from
+  `pages/<page>/components/<Name>/`. Do not introduce one file-by-file: either configure it globally and
+  convert every import, or keep writing relative paths.
 
 <br>
 
@@ -87,17 +121,29 @@ Layering rules:
 | Python module | `snake_case.py` | `vector_store.py` |
 | Store module | `<kind>_store.py` inside `retrieval/<kind>/` | `keyword/bm25_store.py` |
 | Node module | named for the role, not the phase | `planner.py`, `reranker.py`, `reflection.py` |
-| Vue component | `PascalCase.vue` | `PipelineTracker.vue` |
+| Vue component | `PascalCase.vue`, inside a folder of the same name | `PipelineTracker/PipelineTracker.vue` |
 | Vue view | `PascalCaseView.vue` | `KnowledgeBaseView.vue` |
-| Pinia store | lowercase file, `use<Name>Store` export | `rag.js` → `useRagStore` |
+| Pure-logic sibling | `camelCase.js` — the `.vue` name with a lowercase initial | `KnowledgeBaseView.vue` → `knowledgeBaseView.js` |
+| Split CSS sibling | `camelCase.css` — same rule. **Never** `<name>.style.css` | `ChatHistorySidebar.vue` → `chatHistorySidebar.css` |
+| Subsystem folder | kebab-case, matching its page folder when one exists | `subsystems/knowledge-base/` |
+| Subsystem module | `<abbrev>Store.js` / `<abbrev>Api.js`, flat inside the subsystem | `kbStore.js`, `kbApi.js` |
+| Pinia store | `use<Name>Store` export; the **store id** is spelled out even where the file name abbreviates | `kbStore.js` → `useKbStore`, id `'knowledgeBase'` |
 | Route path | kebab-case | `/knowledge-base` |
 | API path | kebab-case under `/api/` | `/api/knowledge-bases` |
 | Env var | `UPPER_SNAKE`. On the frontend the prefix is a **visibility marker**, not decoration — see below | `RETRIEVAL_TOP_K`, `VUE_APP_API_URL`, `DEV_API_TARGET` |
-| SSE stage id | `snake_case`, matching the node name | `external_tools` |
+| SSE stage id | `snake_case`, matching the **emitted `data.stage` value** — *not* the graph node name (5 of 8 differ) | `reranker` (node `rerank`) |
+
+**The stage id is the string in the `emit()` call, not the graph registration.** `planner`, `retrieval`,
+and `external_tools` are spelled the same in both places, but the other five are not: nodes `aggregate`,
+`rerank`, `compress`, `reason`, `reflect` emit `aggregator`, `reranker`, `compressor`, `reasoning`,
+`reflection`. The emitted value is what `STAGES` (`subsystems/rag/ragStore.js:16-25`) must match; the node
+name never reaches the wire. All eight are listed in
+[`../../api/sse-events/README.md`](../../api/sse-events/README.md).
 
 **The `VUE_APP_` prefix means "compiled into the browser bundle".** Vue CLI inlines every `VUE_APP_*`
 variable at build time, so the prefix is a declaration that the value is public and permanent for that
-build — `VUE_APP_API_URL` (`services/api.js:12`) is one. A frontend-side variable that must **not** reach
+build — `VUE_APP_API_URL` (read in both clients: `subsystems/rag/ragApi.js:12` and
+`subsystems/knowledge-base/kbApi.js:11`) is one. A frontend-side variable that must **not** reach
 the client is deliberately left **unprefixed**: `DEV_API_TARGET` is read by `vue.config.js:12` in the Node
 dev-server process, never by the app, and `dev.py:243` sets it per-run. Choose the prefix by where the
 value is consumed, not by which half of the repo the file sits in.
@@ -110,9 +156,9 @@ From the root `.gitignore` — these are runtime state, never source: `node_modu
 `.env` and `*.env` (but **not** `.env.example`), virtualenvs (`my_venv/`, `venv/`, `.venv/`, `env/`),
 `__pycache__/`, build artifacts, IDE folders, and `.claude`.
 
-> [!WARNING]
-> **The two data ignores do not work.** `.gitignore:29-30` list `Backend/data/databases/` and
-> `Backend/data/uploads/`, but `DATA_ROOT` is CWD-relative (`config.py:44`) and the backend runs from
-> `Backend/src`, so the real tree is `Backend/src/data/` — unignored, and partially **tracked**
-> (`chroma.sqlite3`). `Backend/data/` does not exist. Ignore `Backend/src/data/` instead, and untrack what
-> is already committed.
+**The runtime data tree is ignored at both possible locations.** `.gitignore:32` ignores
+`Backend/src/data/` — the real one, because `DATA_ROOT` is the CWD-relative literal `"./data"`
+(`config.py:44`) and the backend runs from `Backend/src` — and `.gitignore:33` also ignores
+`Backend/data/`, which is where the tree lands if anyone starts the process from `Backend/`. An
+explanatory comment block at `.gitignore:29-31` records why both entries exist. Keep both: dropping the
+second re-opens the case where a wrongly-started backend commits a vector database.

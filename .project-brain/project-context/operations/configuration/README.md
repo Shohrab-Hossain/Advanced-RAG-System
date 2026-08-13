@@ -101,8 +101,14 @@ lua  dart sql
 ```
 
 The set is far wider than the four loader types suggest — it accepts source and script files
-(`py`, `sh`, `bat`, `pl`, `js`) as indexable text. `Frontend/src/components/FileUpload.vue:77-84` carries
-the same 35 entries as its `accept` list, so the two sides are in sync; keep them that way.
+(`py`, `sh`, `bat`, `pl`, `js`) as indexable text.
+
+The frontend mirrors it: `ACCEPT_ATTR` at
+`Frontend/src/pages/knowledge-base/views/knowledgeBaseView.js:13-20` is the `accept` attribute handed to
+the upload input, and carries **the same 35 entries** — the two sets were compared and are identical, with
+nothing on either side only. The source asserts the invariant itself at `knowledgeBaseView.js:11-12`;
+**keep them in sync.** Adding a backend extension without adding it here makes the file unpickable in the
+UI; adding it here without the backend gives the user a `400` from the route's `_allowed()` check.
 
 <br>
 
@@ -110,7 +116,7 @@ the same 35 entries as its `accept` list, so the two sides are in sync; keep the
 
 | Variable | Default | Does |
 |---|---|---|
-| `VUE_APP_API_URL` | `''` (falls back to relative URLs) | Base for every API call in `services/api.js:12`. Vue CLI only exposes variables prefixed `VUE_APP_`, and they are **baked into the bundle at build time**. Set by `dev.py:245` only under `--direct` |
+| `VUE_APP_API_URL` | `''` (falls back to relative URLs) | Base for every API call. Read **twice** — once per subsystem client, at `subsystems/rag/ragApi.js:12` and `subsystems/knowledge-base/kbApi.js:11`; both must see the same value. Vue CLI only exposes variables prefixed `VUE_APP_`, and they are **baked into the bundle at build time**. Set by `dev.py:245` only under `--direct` |
 | `DEV_API_TARGET` | unset → the literal `http://localhost:5000` | Where the dev-server proxy forwards `/api` (`vue.config.js:12`). Always exported by `dev.py:243` so the proxy follows the port the launcher chose |
 
 **The two are deliberately different in kind.** `VUE_APP_API_URL` is compiled into the client bundle and
@@ -146,13 +152,15 @@ tree below therefore lands wherever the backend was started, and every path is c
         └── bm25_store/bm25_store.pkl
 ```
 
-> [!CAUTION]
-> **The live corpus is at `Backend/src/data/`, and it is not ignored.** The backend is started from
-> `Backend/src`, so that is where the tree lands. `Backend/data/` **does not exist**, yet `.gitignore:29-30`
-> ignore `Backend/data/databases/` and `Backend/data/uploads/` — two globs that match nothing. The
-> consequence is live: `Backend/src/data/databases/vector_db/chroma_db/chroma.sqlite3` is **tracked in
-> git** and grows with every ingest. Untrack it and fix the ignore paths before adding more data.
-> Starting the backend from `Backend/` instead opens a second, empty corpus at `Backend/data/` — see
+> [!NOTE]
+> **The live corpus is at `Backend/src/data/`, and it is ignored — as is the other location.** The backend
+> is started from `Backend/src`, so that is where the tree lands; an earlier ignore rule aimed at
+> `Backend/data/` therefore missed it entirely, and the Chroma database was committed. That is fixed:
+> `.gitignore:32` now covers `Backend/src/data/` and `.gitignore:33` covers `Backend/data/`, with the
+> reasoning in a comment at `.gitignore:29-31`, and the tracked blob was removed. Nothing under either path
+> is tracked today (`git check-ignore -v` on the Chroma database resolves to `.gitignore:32`). **Keep both
+> entries** — dropping the first re-opens the case that caused the original leak. Starting the backend from
+> `Backend/` instead opens a second, empty corpus at `Backend/data/` — see
 > [`../../runtime/backend-startup/README.md`](../../runtime/backend-startup/README.md).
 
 Deleting `databases/` resets the index; deleting `uploads/` orphans the registry entries (their files can

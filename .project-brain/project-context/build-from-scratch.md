@@ -115,18 +115,22 @@ Build in this order — each step's specification is linked.
 ```
 Advanced RAG System/
 ├── Backend/src/rag_pipeline/{core,encoding,generation,ingestion,ranking,retrieval}/
-└── Frontend/src/{assets,components,router,services,stores,views}/
+└── Frontend/src/
+    ├── assets/  router/  store/
+    ├── subsystems/{rag,knowledge-base}/
+    ├── shared/components/
+    └── pages/{home,chat,knowledge-base,configuration}/
 ```
 
 Add `__init__.py` to every Python package. Write the root `.gitignore` covering `__pycache__/`, venvs,
 `.env`/`*.env` (un-ignoring `.env.example`), `node_modules/`, `Frontend/dist/`, and the runtime data tree.
 
-> [!CAUTION]
-> **Do not copy the shipped ignore paths — they are wrong.** `.gitignore:29-30` ignore
-> `Backend/data/databases/` and `Backend/data/uploads/`, but `DATA_ROOT` is CWD-relative and the backend
-> runs from `Backend/src`, so the real tree is `Backend/src/data/` and those globs match nothing. The
-> live consequence: `Backend/src/data/databases/vector_db/chroma_db/chroma.sqlite3` is **tracked in git**.
-> A rebuild should ignore **`Backend/src/data/`** (or set `DATA_ROOT` to an absolute path and ignore that).
+> [!IMPORTANT]
+> **Ignore the data tree at both locations.** `DATA_ROOT` is CWD-relative (`config.py:44`) and the backend
+> runs from `Backend/src`, so the live tree is `Backend/src/data/` — but a process started one level up
+> creates `Backend/data/` instead. The shipped file ignores both (`.gitignore:32-33`, with the reasoning in
+> a comment at `:29-31`); reproduce both entries, or set `DATA_ROOT` to an absolute path outside the repo
+> and ignore that. Ignoring only `Backend/data/` silently commits a growing vector database.
 
 Full layout and naming rules:
 [`conventions/project-layout/README.md`](conventions/project-layout/README.md).
@@ -203,20 +207,79 @@ read in the Node dev-server process and must not be inlined into the client bund
 `src/assets/main.css` — the Tailwind entry plus the `@layer base/components/utilities` blocks. Every token,
 class, and animation is specified with real values in [`design/theme/README.md`](design/theme/README.md).
 
-### 8. State and services
+### 8. The two subsystems, then the root store
 
-`src/services/api.js` (seven call wrappers — `uploadFile`, `getDocuments`, `clearDocuments`,
-`healthCheck`, `getProviders`, `getKnowledgeBases`, `deleteKnowledgeBase` — plus `streamQuery`'s
-fetch+reader loop, eight exports in all) and `src/stores/`
-(`rag.js` with `STAGES` and `_applyEvent`, `ui.js` with the theme and modal). Specified in
-[`architecture/frontend.md`](architecture/frontend.md), with the event mapping in
-[`features/pipeline-tracker/README.md`](features/pipeline-tracker/README.md) and the history contract in
+`Frontend/src/` is sorted by **ownership, not by kind**. Before writing a file, answer *who owns this?* —
+one capability, one page, or nobody. There is no `services/` or `stores/` folder to put things in; the
+decision and the rejected kind-first alternative are in
+[ADR-007](../decisions/ADRs/entries/007-ownership-based-frontend-tree.md).
+
+Build the two capabilities first — each is a flat folder holding its own API client **and** its own store:
+
+**`src/subsystems/rag/`**
+
+| File | Contents |
+|---|---|
+| `ragApi.js` | Its own axios instance over `const BASE = process.env.VUE_APP_API_URL \|\| ''`. Three exports: `healthCheck` (`GET /api/health`), `getProviders` (`GET /api/providers`), and `streamQuery` (`POST /api/query` — a `fetch` + `ReadableStream` reader loop, not axios and not `EventSource`, returning `{ abort }`). |
+| `ragStore.js` | `defineStore('rag', …)`. Exports the `STAGES` constant — eight descriptors whose ids must equal the **`data.stage` values the backend emits**, which are *not* the graph node names (five of the eight differ — see the gotcha below) — plus provider selection, the query lifecycle, `stageStatuses`, the result, and `chatHistory` persisted to `localStorage['rag-chat-history']`. The `_applyEvent(type, data)` reducer is what turns SSE events into stage status. |
+
+**`src/subsystems/knowledge-base/`**
+
+| File | Contents |
+|---|---|
+| `kbApi.js` | Its **own** axios instance, reading `VUE_APP_API_URL` a second time. Five exports: `uploadFile` (`POST /api/upload`), `getDocuments` (`GET /api/documents`), `clearDocuments` (`DELETE /api/clear`), `getKnowledgeBases` (`GET /api/knowledge-bases`), `deleteKnowledgeBase` (`DELETE /api/knowledge-bases/<file_hash>`). |
+| `kbStore.js` | `defineStore('knowledgeBase', …)` — note the id is spelled out while the file abbreviates. Index stats, the KB list, and the upload/indexing progress state, including `_animateIndexing()`, which eases a fake progress bar toward 95 because the backend reports no indexing progress. |
+
+Eight API exports in total, split **3 / 5** by owner. Every wrapper returns `data`, never the axios
+response. **The two subsystems must not import each other** — where a screen needs both, the component
+imports both stores.
+
+Then `src/store/index.js` — `defineStore('ui', …)`, holding **only** what no capability owns: the theme
+(`localStorage['rag-theme']`, default `'dark'`, applied by toggling `dark` on `<html>`) and the
+promise-based modal that `ui.alert()` / `ui.confirm()` resolve. Anything capability-specific that lands
+here has been mis-filed.
+
+Full state shape in [`architecture/frontend.md`](architecture/frontend.md), the event mapping in
+[`features/pipeline-tracker/README.md`](features/pipeline-tracker/README.md), and the history contract in
 [`features/chat-history/README.md`](features/chat-history/README.md).
 
-### 9. Components and views
+### 9. Shell, then pages, then components
 
-`main.js` → `App.vue` → `router/index.js` → the four views → the twelve components. Per-component
-responsibilities, props, and emits are tabulated in [`architecture/frontend.md`](architecture/frontend.md).
+Order: `main.js` → `App.vue` → `router/index.js` → the three shared components → each page in turn.
+
+1. **Shared components** — `src/shared/components/<Name>/<Name>.vue`, for the three used by more than one
+   page: `NavBar/`, `ModalDialog/`, `FileTypeIcon/`.
+2. **Pages** — `src/pages/<page>/` for each of `home`, `chat`, `knowledge-base`, `configuration`. Every
+   page gets a `views/` folder, including the two that hold a single view, so the address of a view is the
+   same everywhere. A page's own components go in `src/pages/<page>/components/<Name>/<Name>.vue`:
+
+   | Page | `views/` | `components/` |
+   |---|---|---|
+   | `home` | `HomeView.vue` | — |
+   | `chat` | `ChatView.vue` + `chatView.js` | `ChatHistorySidebar/` · `PipelineTracker/` · `QueryInput/` · `ResultDisplay/` |
+   | `knowledge-base` | `KnowledgeBaseView.vue` + `knowledgeBaseView.js` | `UploadPanel/` · `IndexStats/` · `KnowledgeBaseList/` |
+   | `configuration` | `ConfigView.vue` | `LLMSelector/` |
+
+3. **Satellites live with their parent** — a component imported by exactly one other component goes inside
+   that component's folder: `PipelineTracker/StageRow.vue`, `ResultDisplay/SourceCard.vue`. Promote to
+   `shared/` only when a second page genuinely imports it. The two satellites are why the folder counts in
+   the table above are not component counts: **13 components in all — 3 shared, 6 chat, 3 knowledge-base,
+   1 configuration.**
+4. **Split pure logic into a camelCase sibling** beside the `.vue` — constants and pure functions of their
+   arguments only; every `ref`, `computed`, `watch`, lifecycle hook, and store import stays in the
+   component. That produces `chatView.js` (the shortened `PIPELINE_STEPS` teaser for the empty state),
+   `knowledgeBaseView.js` (`ACCEPT_ATTR` plus the view-model builders), and
+   `chatHistorySidebar.js` (`formatTime`). Do not split a component just because it is long — `LLMSelector.vue`
+   is the largest at 204 lines and correctly has no sibling, because none of its script is pure.
+5. **CSS**: Tailwind utilities, then `@layer components` in `assets/main.css`, and only then a
+   `<style scoped>` block. When such a block outgrows a few rules, move it to a camelCase `<name>.css`
+   sibling and attach it as `<style scoped src="./<name>.css">`, keeping `scoped`.
+6. **No path alias.** Nothing configures `@/`; every import is relative, and the deepest is `../../../../`
+   from a page-owned component folder.
+
+Per-component responsibilities, props, and emits are tabulated in
+[`architecture/frontend.md`](architecture/frontend.md); the placement rules with their do/don't are in
+[`conventions/project-layout/README.md`](conventions/project-layout/README.md).
 
 ### 10. Verify end to end
 
@@ -235,8 +298,27 @@ developer workflow. Its contract and rejected alternatives are recorded in
 
 ## Notes and gotchas for a rebuild
 
-- **`stage` ids are a contract.** The backend's node names and the frontend's `STAGES` ids must match
-  exactly, or the tracker silently ignores events.
+- **`stage` ids are a contract — and the contract is the `emit()` call sites, not `graph.py`.** What the
+  frontend's `STAGES` ids (`Frontend/src/subsystems/rag/ragStore.js:16-25`) must match exactly is the
+  **`data.stage` value each node emits**, which for five of the eight is *not* the name that node is
+  registered under in the graph:
+
+  | Graph node (`graph.py:62-69`) | Emitted `data.stage` |
+  |---|---|
+  | `planner` · `retrieval` · `external_tools` | *same* — `planner` · `retrieval` · `external_tools` |
+  | `aggregate` | `aggregator` |
+  | `rerank` | `reranker` |
+  | `compress` | `compressor` |
+  | `reason` | `reasoning` |
+  | `reflect` | `reflection` |
+
+  So **renaming a node breaks nothing**; changing the `stage` string in an `emit(...)` call silently stops
+  that tracker row from ever updating, because `_applyEvent` ignores any event whose `data.stage` is not in
+  `STAGES`. Read the emitted values off the node bodies (or from
+  [`api/sse-events/README.md`](api/sse-events/README.md), which lists all eight), never off the graph
+  registration — the three that coincide make the wrong rule look true. The separate, shorter
+  `PIPELINE_STEPS` array in `pages/chat/views/chatView.js` is a static teaser for the pre-query empty state
+  and is **deliberately** not the same list — do not reconcile the two.
 - **Start the backend from `Backend/src`.** Not from `Backend/`, and not from the repo root. The reason is
   **`DATA_ROOT`, not imports**: `config.py:44` resolves `"./data"` against the process CWD, so the wrong
   directory opens an empty corpus instead of the live one. Imports are unaffected either way, because

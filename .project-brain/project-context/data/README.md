@@ -41,11 +41,12 @@ Every `./data/…` default is resolved against the **process working directory**
 repository root — so the tree lands under whatever directory the backend was started in. In practice that
 is `Backend/src/data/`.
 
-> [!WARNING]
-> **This runtime state is not actually ignored.** `.gitignore:29-30` ignore `Backend/data/databases/` and
-> `Backend/data/uploads/`, but `Backend/data/` does not exist, so those globs match nothing. The real tree
-> at `Backend/src/data/` is unignored and `chroma.sqlite3` inside it is **tracked in git**, growing with
-> every ingest. See
+> [!NOTE]
+> **This runtime state is ignored at both possible locations.** `.gitignore:32` covers `Backend/src/data/`
+> — the real one — and `.gitignore:33` covers `Backend/data/`, for the case where someone starts the
+> process one level up; the reasoning is recorded in a comment at `.gitignore:29-31`. Nothing under either
+> path is tracked (`git check-ignore -v` on the Chroma database resolves to `.gitignore:32`). Keep both
+> entries: dropping the first silently commits a growing vector database. See
 > [`../operations/configuration/README.md`](../operations/configuration/README.md).
 
 <br>

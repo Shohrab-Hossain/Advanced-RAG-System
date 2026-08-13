@@ -4,8 +4,9 @@
 **grounded, cited answers from the user's own documents**, and makes every step of how it got there
 visible while it runs.
 
-The product name is `adRAG` (`Frontend/public/index.html` `<title>`, `Frontend/src/views/HomeView.vue`
-hero `<h1>`); the repository folder is "Advanced RAG System". The app's own one-line description, from
+The product name is `adRAG` (`Frontend/public/index.html` `<title>`,
+`Frontend/src/pages/home/views/HomeView.vue:13` hero `<h1>`); the repository folder is
+"Advanced RAG System". The app's own one-line description, from
 `Frontend/public/index.html`:
 
 > A multi-stage Retrieval-Augmented Generation pipeline combining hybrid search, cross-encoder reranking,
@@ -44,8 +45,9 @@ A single developer or researcher running the system **locally** against their ow
 no sign-up, no user model, no tenancy: the app boots straight into a working state, and the frontend
 talks to a Flask server on localhost — port `5001` by default (`config.py:68`), or whichever free port the
 `dev.py` launcher picked. The `Ollama` provider path exists so the whole system can
-run with **no data leaving the machine** (`Frontend/src/views/ConfigView.vue` states this as the
-provider's headline property).
+run with **no data leaving the machine** — `Frontend/src/pages/configuration/views/ConfigView.vue:12`
+states this as the provider's headline property ("Ollama runs entirely on your machine — no data sent
+externally"), and repeats it at `:133`.
 
 <br>
 

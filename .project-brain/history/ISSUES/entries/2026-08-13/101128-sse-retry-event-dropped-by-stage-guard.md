@@ -4,11 +4,18 @@ date: 2026-08-13
 time: "10:11"
 category: logic
 summary: |-
-  **The frontend's `retry` SSE handler is unreachable dead code, so the reflection retry counter never moves.** `_applyEvent` in `stores/rag.js` guards every event with `if (!stage || !(stage in stageStatuses)) return`, but the backend's `retry` frame (`reflection.py:129-135`) carries `attempt`/`max_attempts`/`reason`/`escalate_external`/`message` and **no `stage` key** — so the guard returns before `case 'retry'` at `rag.js:122` can run. `retryCount` stays 0 and the retrieval stages never reset to idle, meaning a self-reflection retry is invisible in the UI even though the pipeline genuinely re-ran. **OPEN — not fixed.** Found by documentation ground-truthing, not by a bug report. Takeaway: a payload-shape assumption applied as a blanket guard silently disables every event that legitimately lacks that field.
+  **The frontend's `retry` SSE handler is unreachable dead code, so the reflection retry counter never moves.** `_applyEvent` in `subsystems/rag/ragStore.js` (was `stores/rag.js` when filed) guards every event with `if (!stage || !(stage in stageStatuses)) return`, but the backend's `retry` frame (`reflection.py:129-135`) carries `attempt`/`max_attempts`/`reason`/`escalate_external`/`message` and **no `stage` key** — so the guard returns before `case 'retry'` at `ragStore.js:109` can run. `retryCount` stays 0 and the retrieval stages never reset to idle, meaning a self-reflection retry is invisible in the UI even though the pipeline genuinely re-ran. **OPEN — not fixed.** Found by documentation ground-truthing, not by a bug report. Takeaway: a payload-shape assumption applied as a blanket guard silently disables every event that legitimately lacks that field.
 ---
 
 # SSE `retry` event silently dropped by the stage guard in `rag.js`
-**Date:** 2026-08-13 · **Category:** logic · **Status:** OPEN — diagnosed, not fixed · **Refs:** `Frontend/src/stores/rag.js:97-133`, `Backend/src/rag_pipeline/generation/reflection.py:129-135`
+**Date:** 2026-08-13 · **Category:** logic · **Status:** OPEN — diagnosed, not fixed · **Refs:** `Frontend/src/subsystems/rag/ragStore.js:84-120`, `Backend/src/rag_pipeline/generation/reflection.py:129-135`
+
+> [!NOTE]
+> **File moved 2026-08-13 (plan `152630`, commit `1f177af`).** `Frontend/src/stores/rag.js` is now
+> **`Frontend/src/subsystems/rag/ragStore.js`**. The bug moved with it, byte-identical and still
+> unfixed: the guard is at `ragStore.js:87-88` and the unreachable `case 'retry'` at `ragStore.js:109`.
+> The line numbers quoted in the body below are the **original** `rag.js` ones — subtract 13 for the
+> current file. Only the coordinates were corrected here; the diagnosis is untouched.
 
 ## Symptom
 

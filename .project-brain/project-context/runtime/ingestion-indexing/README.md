@@ -92,10 +92,31 @@ becomes a node `entity:<lowercased>` with a `count`; the edge between them carri
 The upload UI shows two phases because only the first is measurable:
 
 1. **Transfer** — real percentage from axios `onUploadProgress` → `uploadProgress`.
-2. **Indexing** — the server gives no progress signal, so `_animateIndexing()` in `stores/rag.js` eases a
-   fake bar from 0 toward 95 in steps of 5 every 80 ms, then holds at 95 until the request resolves and
-   jumps to 100. `KnowledgeBaseView.vue` labels the phases "Uploading file…", "Processing on server…", and
-   "Indexing chunks…", and renders an indeterminate shimmer when the percentage is unknown.
+2. **Indexing** — the server gives no progress signal, so `_animateIndexing()` in
+   `subsystems/knowledge-base/kbStore.js:62-76` eases a fake bar from 0 toward 95 in steps of 5 every
+   80 ms, then holds at 95 until the request resolves and jumps to 100.
+
+Both phases are state on the **knowledge-base subsystem**, not on the RAG store — the upload progress
+moved out of the old single frontend store along with the rest of the KB capability.
+
+`UploadPanel.vue` (`pages/knowledge-base/components/UploadPanel/`) renders them as **three** user-visible
+steps from two computeds:
+
+| Computed | Where | Returns |
+|---|---|---|
+| `progressLabel` | `UploadPanel.vue:112-114` | `"Uploading file…"` → `"Processing on server…"` → `"Indexing chunks…"` |
+| `progressPct` | `UploadPanel.vue:117-121` | the transfer percentage, **`null`** while the server processes, then the animated indexing value |
+
+> [!NOTE]
+> **`progressLabel`'s branch order is the reverse of the phase order.** It tests `isIndexing` first and
+> falls through to `"Uploading file…"` as the default, so reading `:112-114` top-down gives the last phase
+> first. The chronological sequence above is the user-visible order, not the source order — don't "fix" the
+> branches into chronological order, since the fallback has to be the least-specific state.
+
+The middle phase is the reason for the indeterminate shimmer: `progressPct` returns **`null`** once the
+transfer completes but before indexing starts, and a null percentage is what the bar renders as a shimmer
+rather than a determinate width. A phase that reported `0` instead of `null` would render as an empty bar
+and read as stalled.
 
 After success the store calls `refreshStats()` then `fetchKnowledgeBases()`.
 

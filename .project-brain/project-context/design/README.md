@@ -24,8 +24,10 @@ no design-system package and no CSS framework beyond Tailwind — the identity l
 
 ## The identity in five rules
 
-1. **Dark by default.** `stores/ui.js` initialises the theme to `'dark'` unless `localStorage['rag-theme']`
+1. **Dark by default.** `store/index.js` initialises the theme to `'dark'` unless `localStorage['rag-theme']`
    says otherwise, and applies it by toggling the `dark` class on `<html>` (Tailwind `darkMode: 'class'`).
+   The file is the app-shell store; its **store id is still `'ui'`** (`store/index.js:8`), so `useUiStore`
+   is the name to search for.
 2. **Warm neutrals, not cool greys.** Everything neutral uses Tailwind's `stone` scale plus a custom
    `warm` palette; the darkest surfaces are near-black browns (`#0C0A09`, `#1C1917`), never blue-greys.
 3. **One accent: emerald.** Primary actions, active pipeline stages, links, inline code, and the brand

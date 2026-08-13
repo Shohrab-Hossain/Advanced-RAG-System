@@ -2,7 +2,8 @@
 
 How pipeline progress reaches the browser. Implemented in `Backend/src/rag_pipeline/core/events.py` and
 the `/api/query` route in `Backend/src/app.py`; consumed by `streamQuery()` in
-`Frontend/src/services/api.js`.
+`Frontend/src/subsystems/rag/ragApi.js:40` — the RAG subsystem's own axios/`fetch` client, which is the
+only frontend module that reads this stream.
 
 <br>
 
