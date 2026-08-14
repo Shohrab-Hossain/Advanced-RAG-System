@@ -1,0 +1,35 @@
+/*
+ * tokens.css — the design tokens as CSS custom properties
+ * ───────────────────────────────────────────────────────
+ * A mirror of tokens.json for consumers that are not Tailwind: a plain stylesheet, a lab page, an
+ * embedded widget, anything that cannot run the config.
+ *
+ * ⚠️ tokens.json is the SOURCE. This file restates it. If the two disagree, tokens.json wins and this
+ * file is what needs fixing — the app renders from the JSON via tailwind.config.js, so a drift here is
+ * invisible in the running app and shows up only wherever this file is actually loaded.
+ *
+ * Nothing in Frontend/src/ imports this today. It exists so that a theme candidate or a design lab can
+ * swap one stylesheet and restyle a whole page without touching the build.
+ */
+
+:root {
+  /* ── Color · a warm neutral ramp, stone-derived ─────────────────────────── */
+  --color-warm-950: #0C0A09;
+  --color-warm-900: #1C1917;
+  --color-warm-850: #231F1D;  /* off-scale — layered surfaces */
+  --color-warm-800: #292524;
+  --color-warm-750: #302B28;  /* off-scale — layered surfaces */
+  --color-warm-700: #44403C;
+
+  /* ── Type · loaded from Google Fonts in public/index.html ───────────────── */
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* ── Elevation ──────────────────────────────────────────────────────────── */
+  --elevation-card:    0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);
+  --elevation-card-md: 0 4px 12px 0 rgb(0 0 0 / 0.08), 0 2px 4px -1px rgb(0 0 0 / 0.05);
+
+  /* ── Motion ─────────────────────────────────────────────────────────────── */
+  --motion-fade-in:  fadeIn 0.2s ease-out;
+  --motion-slide-up: slideUp 0.2s ease-out;
+}

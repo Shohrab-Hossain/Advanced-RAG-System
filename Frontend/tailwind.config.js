@@ -1,4 +1,18 @@
-/** @type {import('tailwindcss').Config} */
+/**
+ * tailwind.config.js — the Tailwind theme, READ from the design source
+ * ────────────────────────────────────────────────────────────────────
+ * This file no longer DEFINES design values. It reads design/theme/tokens.json, which is the single
+ * source for the palette, type, elevation and motion.
+ *
+ * Why: a toolchain config holding design source is the split design/ exists to prevent — swap Tailwind
+ * and the design system goes with it. Add a token to tokens.json, not here.
+ *
+ * The keyframes stay here on purpose: they are CSS structure the motion tokens drive, not design values.
+ *
+ * @type {import('tailwindcss').Config}
+ */
+const tokens = require('./design/theme/tokens.json')
+
 module.exports = {
   content: [
     './public/index.html',
@@ -8,36 +22,17 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Plus Jakarta Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+        sans: tokens.font.sans,
+        mono: tokens.font.mono,
       },
       colors: {
-        warm: {
-          950: '#0C0A09',
-          900: '#1C1917',
-          850: '#231F1D',
-          800: '#292524',
-          750: '#302B28',
-          700: '#44403C',
-        },
+        warm: tokens.color.warm,
       },
-      animation: {
-        'fade-in': 'fadeIn 0.2s ease-out',
-        'slide-up': 'slideUp 0.2s ease-out',
-      },
-      keyframes: {
-        fadeIn: {
-          '0%':   { opacity: '0', transform: 'translateY(4px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
-        },
-        slideUp: {
-          '0%':   { opacity: '0', transform: 'translateY(8px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
-        },
-      },
+      animation: tokens.motion.animation,
+      keyframes: tokens.motion.keyframes,
       boxShadow: {
-        'card':    '0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06)',
-        'card-md': '0 4px 12px 0 rgb(0 0 0 / 0.08), 0 2px 4px -1px rgb(0 0 0 / 0.05)',
+        'card':    tokens.elevation.card,
+        'card-md': tokens.elevation['card-md'],
       },
     },
   },

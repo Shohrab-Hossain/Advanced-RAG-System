@@ -36,6 +36,10 @@ Backend/data/
 # ── Node / Frontend ───────────────────────────────────────────────────────────
 node_modules/
 Frontend/dist/
+
+# The design lab is throwaway scratch — candidates, rejected directions, the
+# gallery shell. Only the PROMOTED theme in Frontend/design/theme/ is committed.
+Frontend/design/theme-lab/
 Frontend/.env
 Frontend/.env.local
 Frontend/.env.*.local
