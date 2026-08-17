@@ -84,6 +84,17 @@ export const useRagStore = defineStore('rag', () => {
   function _applyEvent(type, data) {
     events.value.push({ type, data, ts: Date.now() })
 
+    // `retry` is a pipeline-level event and deliberately carries no `stage`, so it must be
+    // handled BEFORE the stage guard below — which would otherwise drop it and leave the
+    // retry counter stuck at 0 with the stage rows never re-animating.
+    if (type === 'retry') {
+      retryCount.value = (data.attempt || 1) - 1
+      // Reset retrieval stages to idle so they re-animate
+      ;['retrieval', 'external_tools', 'aggregator', 'reranker', 'compressor', 'reasoning', 'reflection']
+        .forEach((s) => { stageStatuses[s] = { status: 'idle', message: '', details: null } })
+      return
+    }
+
     const stage = data?.stage
     if (!stage || !(stage in stageStatuses)) return
 
@@ -105,12 +116,6 @@ export const useRagStore = defineStore('rag', () => {
       case 'stage_error':
         stageStatuses[stage].status = 'error'
         stageStatuses[stage].message = data.error || 'Error'
-        break
-      case 'retry':
-        retryCount.value = (data.attempt || 1) - 1
-        // Reset retrieval stages to idle so they re-animate
-        ;['retrieval', 'external_tools', 'aggregator', 'reranker', 'compressor', 'reasoning', 'reflection']
-          .forEach((s) => { stageStatuses[s] = { status: 'idle', message: '', details: null } })
         break
       case 'finalize':
         stageStatuses[stage].status = 'complete'

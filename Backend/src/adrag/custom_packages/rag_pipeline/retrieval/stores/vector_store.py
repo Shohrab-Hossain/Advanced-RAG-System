@@ -168,9 +168,11 @@ class FaissVectorStore(_BaseVectorStore):
                 "index_file": idx_file,
             }, f)
 
-    def _ensure_index(self, emb_vec):
+    def _ensure_index(self, dim: int):
+        # Takes the DIMENSION, not a vector: the only caller has embs.shape[1] to hand, and
+        # len() on that int raised TypeError — the first add_documents() always died here.
         if self.index is None:
-            self.dim = len(emb_vec)
+            self.dim = dim
             # use inner product on normalized vectors for cosine
             self.index = faiss.IndexFlatIP(self.dim)
 

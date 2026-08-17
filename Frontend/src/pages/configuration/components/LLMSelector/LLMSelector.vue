@@ -178,10 +178,10 @@ const ollamaModels = computed(() => ollamaInfo.value.models ?? [])
 const ollamaError  = computed(() => ollamaInfo.value.error ?? '')
 
 const activeOpenaiModel = computed(() =>
-  store.openaiModel || openaiInfo.value.model || openaiModels.value[0] || null
+  store.openaiModel || openaiInfo.value.model || openaiModels.value[0] || null,
 )
 const activeOllamaModel = computed(() =>
-  store.ollamaModel || ollamaModels.value[0] || ollamaInfo.value.model || null
+  store.ollamaModel || ollamaModels.value[0] || ollamaInfo.value.model || null,
 )
 
 function select(p) {

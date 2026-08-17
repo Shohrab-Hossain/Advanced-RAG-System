@@ -128,12 +128,12 @@ async function handleFiles(files) {
   for (let i = 0; i < files.length; i++) {
     const file = files[i]
     const duplicate = store.knowledgeBases.find(
-      kb => kb.name.toLowerCase() === file.name.toLowerCase()
+      kb => kb.name.toLowerCase() === file.name.toLowerCase(),
     )
     if (duplicate) {
       const ok = await ui.confirm(
         `"${file.name}" is already in the knowledge base. Re-upload to re-index it?`,
-        { confirmText: 'Yes, re-index it', cancelText: 'No, keep existing' }
+        { confirmText: 'Yes, re-index it', cancelText: 'No, keep existing' },
       )
       if (!ok) continue
       await store.removeKnowledgeBase(duplicate.id)
@@ -141,7 +141,10 @@ async function handleFiles(files) {
     store.resetUploadResult()
     try {
       await store.uploadDocument(file, { queueCurrent: i + 1, queueTotal: total })
-    } catch {}
+    } catch {
+      // Swallowed on purpose: uploadDocument already records the failure on the
+      // store, and the queue must continue so one bad file cannot abort the rest.
+    }
   }
   setTimeout(() => store.resetUploadResult(), 6000)
 }

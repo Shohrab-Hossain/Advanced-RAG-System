@@ -47,8 +47,11 @@ const rowClass = computed(() => ({
 }))
 
 const iconBg = computed(() => ({
-  'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400': s.value === 'active',
-  'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400': s.value === 'complete',
+  // active and complete share one icon treatment — declared once, not twice.
+  // As two identical keys the second silently won, so an ACTIVE stage rendered
+  // with no icon background at all.
+  'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400':
+    s.value === 'active' || s.value === 'complete',
   'bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400': s.value === 'error',
   'bg-stone-100 dark:bg-white/[0.05] text-slate-400 dark:text-slate-600': s.value === 'idle' || s.value === 'skipped',
 }))

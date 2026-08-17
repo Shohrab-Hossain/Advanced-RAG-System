@@ -62,7 +62,7 @@ import StageRow from './StageRow.vue'
 const store = useRagStore()
 
 const completedCount = computed(() =>
-  STAGES.filter(s => ['complete', 'skipped'].includes(store.stageStatuses[s.id]?.status)).length
+  STAGES.filter(s => ['complete', 'skipped'].includes(store.stageStatuses[s.id]?.status)).length,
 )
 
 const progressPct = computed(() => {
