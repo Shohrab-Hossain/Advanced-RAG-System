@@ -1,38 +1,8 @@
-# ── Core framework ───────────────────────────────────────────────────────────
-flask>=3.0.0
-flask-cors>=4.0.0
-python-dotenv>=1.0.0
+# Dependencies live in pyproject.toml — this file is a pointer, kept so that
+# `pip install -r requirements.txt` still works.
+#
+#   pip install -e .              runtime only
+#   pip install -e ".[faiss]"     also the alternative vector backend
+#   pip install -e ".[prod]"      also gunicorn + gevent-websocket
 
-# ── LangChain / LangGraph ────────────────────────────────────────────────────
-langchain>=0.2.0
-langchain-text-splitters>=0.2.0
-langchain-openai>=0.1.0
-langchain-ollama>=0.1.0
-langchain-community>=0.2.0
-langgraph>=0.1.0
-
-# ── Vector store ─────────────────────────────────────────────────────────────
-chromadb>=0.5.0
-# optional alternative backend (only needed if you set VECTOR_BACKEND=faiss)
-faiss-cpu>=1.7.4
-
-# ── Embeddings & Reranking ───────────────────────────────────────────────────
-sentence-transformers>=3.0.0
-
-# ── Sparse retrieval ─────────────────────────────────────────────────────────
-rank-bm25>=0.2.2
-
-# ── Graph ─────────────────────────────────────────────────────────────────────
-networkx>=3.3
-
-# ── Document loaders ─────────────────────────────────────────────────────────
-pypdf>=4.0.0
-docx2txt>=0.8
-unstructured>=0.14.0
-
-# ── Web search (optional — for use_external=True) ────────────────────────────
-ddgs>=7.0.0
-
-# ── Utilities ────────────────────────────────────────────────────────────────
-numpy>=1.26.0
-requests>=2.31.0
+-e .

@@ -13,9 +13,9 @@
 </template>
 
 <script setup>
-import { useUiStore } from './stores/ui'
-import NavBar from './components/NavBar.vue'
-import ModalDialog from './components/ModalDialog.vue'
+import { useUiStore } from './store'
+import NavBar from './shared/components/NavBar/NavBar.vue'
+import ModalDialog from './shared/components/ModalDialog/ModalDialog.vue'
 
 useUiStore()
 </script>

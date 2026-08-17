@@ -1,0 +1,76 @@
+# ── Build ─────────────────────────────────────────────────────────────────────
+[build-system]
+requires      = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+
+# ── Project ───────────────────────────────────────────────────────────────────
+[project]
+name            = "adrag-backend"
+version         = "0.1.0"
+description     = "Advanced RAG System — Flask REST + SSE API over a LangGraph pipeline"
+readme          = "README.md"
+requires-python = ">=3.10"
+
+# 3.10 is mandated by the code, not just the docs: PEP 604 unions are evaluated at
+# runtime in module and signature scope, and no file carries
+# `from __future__ import annotations` — so 3.9 fails at import.
+
+dependencies = [
+    # web api
+    "flask>=3.0.0",
+    "flask-cors>=4.0.0",
+    "python-dotenv>=1.0.0",
+
+    # langchain / langgraph
+    "langchain>=0.2.0",
+    "langchain-text-splitters>=0.2.0",
+    "langchain-openai>=0.1.0",
+    "langchain-ollama>=0.1.0",
+    "langchain-community>=0.2.0",
+    "langgraph>=0.1.0",
+
+    # dense vector store (the VECTOR_BACKEND=chroma default)
+    "chromadb>=0.5.0",
+
+    # embeddings + cross-encoder reranking
+    "sentence-transformers>=3.0.0",
+
+    # sparse retrieval
+    "rank-bm25>=0.2.2",
+
+    # knowledge graph
+    "networkx>=3.3",
+
+    # document loaders
+    "pypdf>=4.0.0",
+    "docx2txt>=0.8",
+    "unstructured>=0.14.0",
+    "markdown>=3.6",              # unstructured's .md partitioner imports it at call time
+
+    # web search — used when the planner sets use_external=True
+    "ddgs>=7.0.0",
+
+    # utilities
+    "numpy>=1.26.0",
+    "requests>=2.31.0",
+]
+
+# ── Optional dependency groups ───────────────────────────────────────────────
+# Each group is a real switch someone flips, not a category:
+#   faiss  installs the alternative vector backend VECTOR_BACKEND=faiss selects
+#   prod   installs what the gunicorn command in main.py has always needed
+[project.optional-dependencies]
+faiss = ["faiss-cpu>=1.7.4"]
+prod  = ["gunicorn>=21.0.0", "gevent-websocket>=0.10.1"]
+
+# ── Entry points ─────────────────────────────────────────────────────────────
+[project.scripts]
+adrag-dev = "adrag.main:main"
+
+
+# ── Packaging ────────────────────────────────────────────────────────────────
+# src layout: the package is src/adrag/, so `where` points at src/ and the
+# distribution never picks up data/, Documentation/ or the venv.
+[tool.setuptools.packages.find]
+where = ["src"]

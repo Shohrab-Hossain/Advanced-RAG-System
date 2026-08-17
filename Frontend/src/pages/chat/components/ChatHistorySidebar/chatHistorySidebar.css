@@ -1,0 +1,10 @@
+/* Chat History Sidebar — overlay transitions
+   ------------------------------------------
+   Imported by ChatHistorySidebar.vue as <style scoped src="./chatHistorySidebar.css">.
+   The scoped attribute is kept — these class names are generic enough to collide. */
+
+.sidebar-enter-active, .sidebar-leave-active { transition: transform 0.22s ease, opacity 0.22s ease; }
+.sidebar-enter-from, .sidebar-leave-to { opacity: 0; transform: translateX(-100%); }
+
+.backdrop-enter-active, .backdrop-leave-active { transition: opacity 0.2s ease; }
+.backdrop-enter-from, .backdrop-leave-to { opacity: 0; }

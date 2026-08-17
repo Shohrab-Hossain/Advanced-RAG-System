@@ -10,8 +10,9 @@ build/
 .eggs/
 *.whl
 
-# Local LLMs
+# ── Claude workspace (symlinks into Claude Home — not part of the repo) ──────
 .claude
+.project-brain
 
 # Virtual environments
 my_venv/
@@ -26,12 +27,23 @@ env/
 !.env.example
 
 # ── RAG data (runtime, not source) ───────────────────────────────────────────
-Backend/data/databases/
-Backend/data/uploads/
+# DATA_ROOT is anchored to the PACKAGE now — config.py derives _BACKEND_ROOT from
+# __file__ — so the live stores land in Backend/data/ no matter where the server
+# is started from. Backend/src/data/ is kept as a belt-and-braces entry: a relative
+# DATA_ROOT set in .env IS still resolved against the working directory, which is
+# how the stores ended up under src/ before the anchoring landed.
+Backend/src/data/
+Backend/data/
 
 # ── Node / Frontend ───────────────────────────────────────────────────────────
 node_modules/
 Frontend/dist/
+
+# The design lab is throwaway scratch — candidates, rejected directions, the
+# gallery shell. It holds NO live data and may be deleted at any time; nothing
+# reads it, and the build must never require it. The live design system is
+# Frontend/src/assets/main.css, which is committed like any other source file.
+Frontend/design/theme-lab/
 Frontend/.env
 Frontend/.env.local
 Frontend/.env.*.local
