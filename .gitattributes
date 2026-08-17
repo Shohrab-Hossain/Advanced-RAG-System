@@ -1,0 +1,57 @@
+# ── Line endings ──────────────────────────────────────────────────────────────
+#
+# WHY THIS FILE EXISTS: ONE working tree is read by TWO gits. Windows git on E:\
+# runs with core.autocrlf=true; WSL git on /mnt/e runs with it unset, which on
+# Linux means false. Every tracked text file is stored LF and checked out CRLF, so
+# Windows normalises CRLF→LF before comparing and reports a clean tree, while WSL
+# compares raw bytes and reports the entire repo as modified. Neither is wrong —
+# they are applying different rules to identical bytes. Attributes take precedence
+# over core.autocrlf, so THIS file is what makes the two agree, and unlike a git
+# config it travels with a clone instead of living on one machine.
+#
+# `eol=lf` is deliberate and stronger than a bare `text=auto`. `text=auto` alone
+# fixes the COMPARISON but leaves the working tree native-per-platform — and
+# "native" is precisely the concept with no single answer when two gits share one
+# checkout. Pinning the tree to LF removes the ambiguity rather than papering over
+# it: the bytes on disk stop flip-flopping, and a diff can never again show a whole
+# file changed when only its line endings did.
+#
+# Blobs are unaffected. Every tracked text file is ALREADY stored LF — 136 of them,
+# with 0 carrying CRLF in the index — so this rewrites nothing in history.
+
+# Normalise every text file to LF in the repository AND in the working tree.
+* text=auto eol=lf
+
+# Shell scripts MUST be LF: a CRLF shebang (`#!/usr/bin/env bash\r`) makes the
+# kernel look for an interpreter named "bash\r" — a classic, confusing portability
+# failure. Pinned explicitly because these are the files most likely to be run from
+# the WSL side of this same tree.
+*.sh    text eol=lf
+
+# The source types this repo actually carries. Redundant under the glob above,
+# stated so the policy reads without knowing how `text=auto` resolves each one.
+*.py    text eol=lf
+*.vue   text eol=lf
+*.js    text eol=lf
+*.json  text eol=lf
+*.css   text eol=lf
+*.html  text eol=lf
+*.md    text eol=lf
+*.mmd   text eol=lf
+*.svg   text eol=lf
+*.toml  text eol=lf
+*.txt   text eol=lf
+
+# Binary assets: never touch these. `binary` disables line-ending conversion and
+# text diffing both. Frontend/public/{favicon,brand-logo,images/og}/ and
+# Frontend/design/brand/logo/png/ are documented to hold exactly these types.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.ico   binary
+*.pdf   binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
