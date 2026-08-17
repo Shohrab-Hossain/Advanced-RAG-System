@@ -27,9 +27,11 @@ env/
 !.env.example
 
 # ── RAG data (runtime, not source) ───────────────────────────────────────────
-# DATA_ROOT ("./data") resolves against the process working directory, and both
-# main.py and dev.py start the app inside Backend/src/ — so the live stores land
-# in Backend/src/data/. The Backend/data/ pair covers a run started one level up.
+# DATA_ROOT is anchored to the PACKAGE now — config.py derives _BACKEND_ROOT from
+# __file__ — so the live stores land in Backend/data/ no matter where the server
+# is started from. Backend/src/data/ is kept as a belt-and-braces entry: a relative
+# DATA_ROOT set in .env IS still resolved against the working directory, which is
+# how the stores ended up under src/ before the anchoring landed.
 Backend/src/data/
 Backend/data/
 
@@ -38,7 +40,9 @@ node_modules/
 Frontend/dist/
 
 # The design lab is throwaway scratch — candidates, rejected directions, the
-# gallery shell. Only the PROMOTED theme in Frontend/design/theme/ is committed.
+# gallery shell. It holds NO live data and may be deleted at any time; nothing
+# reads it, and the build must never require it. The live design system is
+# Frontend/src/assets/main.css, which is committed like any other source file.
 Frontend/design/theme-lab/
 Frontend/.env
 Frontend/.env.local

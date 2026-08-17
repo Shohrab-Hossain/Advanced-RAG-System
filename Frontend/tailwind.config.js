@@ -1,18 +1,19 @@
 /**
- * tailwind.config.js — the Tailwind theme, READ from the design source
- * ────────────────────────────────────────────────────────────────────
- * This file no longer DEFINES design values. It reads design/theme/tokens.json, which is the single
- * source for the palette, type, elevation and motion.
+ * tailwind.config.js — the Tailwind theme
+ * ───────────────────────────────────────
+ * The live design system is src/assets/main.css: its @layer components classes (.card, .btn-primary,
+ * .section-label-*, .prose-rag) and its @layer utilities animations. This file holds only what has to
+ * be expressed as Tailwind theme config rather than CSS — today that is the two font families.
  *
- * Why: a toolchain config holding design source is the split design/ exists to prevent — swap Tailwind
- * and the design system goes with it. Add a token to tokens.json, not here.
+ * Why nothing is read from design/ any more: design/theme-lab/ is a THROWAWAY, git-ignored scratch
+ * space for trying a new theme out. It holds no live data and may be deleted at any time. Adopting a
+ * theme means writing the values into src/ (and here), not pointing the build at the lab.
  *
- * The keyframes stay here on purpose: they are CSS structure the motion tokens drive, not design values.
+ * The families must stay in step with the Google Fonts <link> in public/index.html — renaming one here
+ * without changing that fetches nothing and silently falls back.
  *
  * @type {import('tailwindcss').Config}
  */
-const tokens = require('./design/theme/tokens.json')
-
 module.exports = {
   content: [
     './public/index.html',
@@ -22,17 +23,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: tokens.font.sans,
-        mono: tokens.font.mono,
-      },
-      colors: {
-        warm: tokens.color.warm,
-      },
-      animation: tokens.motion.animation,
-      keyframes: tokens.motion.keyframes,
-      boxShadow: {
-        'card':    tokens.elevation.card,
-        'card-md': tokens.elevation['card-md'],
+        sans: ['"Plus Jakarta Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
       },
     },
   },
