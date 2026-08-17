@@ -1,0 +1,30 @@
+%%{init: {'theme':'base','fontFamily':'Plus Jakarta Sans, ui-sans-serif, system-ui, sans-serif','themeCSS':'.edgeLabel, .edgeLabel p, .edgeLabel span { font-family: JetBrains Mono, ui-monospace, Consolas, monospace !important; font-size: 11px !important; color:#6B7280 !important; background:#FFFFFF !important; padding:0 3px !important; } .nodeLabel { font-weight:500; text-align:center; }','themeVariables':{'fontSize':'14px','primaryTextColor':'#0F172A','lineColor':'#059669','primaryColor':'#ECFDF5','primaryBorderColor':'#A7F3D0','edgeLabelBackground':'#FFFFFF','labelBackgroundColor':'#FFFFFF'},'state':{'nodeSpacing':130,'rankSpacing':110}}}%%
+stateDiagram-v2
+    direction TB
+    state "reason<br/>answer drafted" as Reason
+    state "reflect<br/>judges grounding · owns the retry budget" as Reflect
+    state "final_answer = answer" as Finalize
+    state "retry keys updated<br/>final_answer left unset" as Loop
+    state "_route_reflection<br/>tests final_answer only" as Router
+    state "retrieval<br/>pass 2 or pass 3" as Retrieval
+
+    [*] --> Reason
+    Reason --> Reflect
+    Reflect --> Finalize: exception · fails open
+    Reflect --> Finalize: no retry left · caveat
+    Reflect --> Finalize: grounded
+    Reflect --> Loop: retry · retry_count + 1
+    Reflect --> Loop: escalate · use_external
+    Reflect --> Loop: answer empty · no budget spent
+    Finalize --> Router
+    Loop --> Router
+    Router --> [*]: set
+    Router --> Retrieval: unset
+    Retrieval --> Reason: rerank · compress
+
+    classDef ok fill:#DCFCE7,stroke:#22C55E,color:#14532D,font-weight:600
+    classDef warn fill:#FEF3C7,stroke:#F59E0B,color:#0F172A,font-weight:600
+    classDef run fill:#DBEAFE,stroke:#3B82F6,color:#0C4A6E,font-weight:600
+    class Finalize ok
+    class Loop warn
+    class Reflect run

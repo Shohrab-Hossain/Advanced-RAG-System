@@ -1,0 +1,125 @@
+%%{init: {'theme':'base','layout':'elk','elk':{'mergeEdges':true,'nodePlacementStrategy':'BRANDES_KOEPF'},'fontFamily':'Plus Jakarta Sans, ui-sans-serif, system-ui, sans-serif','themeCSS':'.edgeLabel, .edgeLabel p, .edgeLabel span { font-family: JetBrains Mono, ui-monospace, Consolas, monospace !important; font-size: 11px !important; color:#6B7280 !important; background:#FFFFFF !important; padding:0 3px !important; } .nodeLabel { font-weight:500; text-align:center; } .cluster-label .nodeLabel { font-weight:700 !important; color:#065F46 !important; }','themeVariables':{'fontSize':'14px','primaryTextColor':'#0F172A','lineColor':'#059669','primaryColor':'#ECFDF5','primaryBorderColor':'#A7F3D0','edgeLabelBackground':'#FFFFFF','labelBackgroundColor':'#FFFFFF'}}}%%
+flowchart TD
+    subgraph L1["① ENTRY"]
+        MAIN(["main.js"]):::se
+        APP["App.vue"]:::step
+        ROUTER["router/index.js<br/>4 routes · lazy import"]:::step
+    end
+
+    subgraph L2["② PAGES — placed by OWNERSHIP · one folder per route, owning its own components"]
+        subgraph P1["pages/home/"]
+            HOME["HomeView.vue<br/>owns nothing"]:::view
+        end
+        subgraph P2["pages/chat/"]
+            CHATV["ChatView.vue"]:::view
+            CHS["ChatHistorySidebar"]:::step
+            QI["QueryInput"]:::step
+            PT["PipelineTracker"]:::step
+            RD["ResultDisplay"]:::step
+            SR["StageRow<br/>in PipelineTracker/"]:::leaf
+            SC["SourceCard<br/>in ResultDisplay/"]:::leaf
+        end
+        subgraph P3["pages/knowledge-base/"]
+            KBV["KnowledgeBaseView.vue"]:::view
+            UP["UploadPanel"]:::step
+            IS["IndexStats"]:::leaf
+            KBL["KnowledgeBaseList"]:::leaf
+        end
+        subgraph P4["pages/configuration/"]
+            CFGV["ConfigView.vue"]:::view
+            LLM["LLMSelector"]:::step
+        end
+    end
+
+    subgraph L3["③ SHARED — promoted only at a SECOND page consumer"]
+        NAV["NavBar.vue<br/>health indicator"]:::step
+        MODAL["ModalDialog.vue"]:::step
+        FTI["FileTypeIcon.vue<br/>3 consumers · 2 pages"]:::leaf
+    end
+
+    subgraph L4["④ store/ — FLAT by kind, no per-capability folders"]
+        RAGS["ragStore.js<br/>id 'rag'"]:::ok
+        KBS["kbStore.js<br/>id 'knowledgeBase'"]:::ok
+        UI["index.js — id 'ui'<br/>pinia + vue ONLY"]:::ok
+    end
+
+    subgraph L5["⑤ services/ — FLAT by kind · own axios instance each"]
+        RAPI["ragApi.js"]:::gate
+        KAPI["kbApi.js"]:::gate
+    end
+
+    API(["⑥ Flask API · 8 routes<br/>dev proxy /api → :5000"]):::se
+
+    MAIN --> APP
+    MAIN --> ROUTER
+    APP --> NAV
+    APP --> MODAL
+    APP --> UI
+    CHATV --> CHS
+    CHATV --> QI
+    CHATV --> PT
+    CHATV --> RD
+    PT --> SR
+    RD --> SC
+    CHATV --> RAGS
+    CHATV --> KBS
+    CHS --> RAGS
+    CHS --> UI
+    QI --> RAGS
+    PT --> RAGS
+    RD --> RAGS
+    KBV --> UP
+    KBV --> IS
+    KBV --> KBL
+    KBV --> KBS
+    KBV --> UI
+    UP --> KBS
+    UP --> UI
+    CFGV --> LLM
+    CFGV --> RAGS
+    LLM --> RAGS
+    NAV --> RAGS
+    NAV --> KBS
+    NAV --> UI
+    MODAL --> UI
+    RAGS --> RAPI
+    KBS --> KAPI
+    RAPI --> API
+    KAPI --> API
+    ROUTER -.-> HOME
+    ROUTER -.-> CHATV
+    ROUTER -.-> KBV
+    ROUTER -.-> CFGV
+    RD --> FTI
+    SC --> FTI
+    KBL --> FTI
+    NAV -.->|"healthCheck() — the ONE component→service edge"| RAPI
+    CHS ~~~ PT
+    QI ~~~ RD
+    UP ~~~ IS
+    IS ~~~ KBL
+    HOME ~~~ CFGV
+    SC ~~~ NAV
+    SR ~~~ MODAL
+
+    classDef se fill:#047857,stroke:#059669,color:#FFFFFF,font-weight:600;
+    classDef view fill:#ECFDF5,stroke:#059669,stroke-width:2px,color:#065F46,font-weight:700;
+    classDef step fill:#ECFDF5,stroke:#A7F3D0,color:#0F172A;
+    classDef leaf fill:#F1F5F9,stroke:#94A3B8,color:#334155;
+    classDef ok fill:#DCFCE7,stroke:#22C55E,color:#14532D,font-weight:600;
+    classDef gate fill:#DBEAFE,stroke:#3B82F6,color:#0C4A6E,font-weight:600;
+    style L1 fill:#F8FAFC,stroke:#CBD5E1,stroke-width:1.2px,color:#065F46;
+    style L2 fill:#F8FAFC,stroke:#CBD5E1,stroke-width:1.2px,color:#065F46;
+    style L3 fill:#F8FAFC,stroke:#CBD5E1,stroke-width:1.2px,color:#065F46;
+    style L4 fill:#F0FDF4,stroke:#86EFAC,stroke-width:1.2px,color:#065F46;
+    style L5 fill:#EFF6FF,stroke:#BFDBFE,stroke-width:1.2px,color:#065F46;
+    style P1 fill:#FFFFFF,stroke:#6EE7B7,stroke-width:1.2px,color:#065F46;
+    style P2 fill:#FFFFFF,stroke:#6EE7B7,stroke-width:1.2px,color:#065F46;
+    style P3 fill:#FFFFFF,stroke:#6EE7B7,stroke-width:1.2px,color:#065F46;
+    style P4 fill:#FFFFFF,stroke:#6EE7B7,stroke-width:1.2px,color:#065F46;
+    style FTI stroke:#3B82F6,stroke-width:2.5px;
+    linkStyle default stroke:#059669,stroke-width:1.5px;
+    linkStyle 36,37,38,39 stroke:#94A3B8,stroke-width:1.4px,stroke-dasharray:5 3;
+    linkStyle 40,41,42 stroke:#3B82F6,stroke-width:2px;
+    linkStyle 43 stroke:#F59E0B,stroke-width:2.2px,stroke-dasharray:6 3;
+    linkStyle 44,45,46,47,48,49,50 stroke:none,stroke-width:0px;

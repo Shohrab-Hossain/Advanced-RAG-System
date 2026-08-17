@@ -1,0 +1,41 @@
+%%{init: {'theme':'base','fontFamily':'Plus Jakarta Sans, ui-sans-serif, system-ui, sans-serif','themeCSS':'.edgeLabel, .edgeLabel p, .edgeLabel span { font-family: JetBrains Mono, ui-monospace, Consolas, monospace !important; font-size: 11px !important; color:#6B7280 !important; background:#FFFFFF !important; padding:0 3px !important; } .nodeLabel { font-weight:500; text-align:center; } .cluster-label .nodeLabel { font-weight:700 !important; color:#92400E !important; }','themeVariables':{'fontSize':'14px','primaryTextColor':'#0F172A','lineColor':'#059669','primaryColor':'#ECFDF5','primaryBorderColor':'#A7F3D0','edgeLabelBackground':'#FFFFFF','labelBackgroundColor':'#FFFFFF'},'flowchart':{'curve':'basis','nodeSpacing':34,'rankSpacing':50,'diagramPadding':8,'htmlLabels':true}}}%%
+flowchart TD
+    UP(["POST /api/upload<br/>multipart file"]):::se
+    G1{"_allowed()<br/>extension check 1 of 2"}:::step
+    E400(["400<br/>unsupported file type"]):::warn
+    SAVE("secure_filename → os.path.join(UPLOAD_FOLDER)<br/>f.save() — the sole path-traversal defence"):::step
+    CHUNK("load_file() — 1 of 6 LangChain loaders, by suffix<br/>RecursiveCharacterTextSplitter 500 · 50 → N chunks<br/>MD5 of file CONTENT → file_hash"):::step
+    G2{"any text<br/>extracted?"}:::step
+    E422(["422<br/>No text could be extracted"]):::warn
+    IDS("generate_chunk_ids<br/>&lt;file_hash&gt;_&lt;i&gt; — deterministic"):::step
+    DEL("remove_document(file_hash)<br/>DELETE BEFORE WRITE — the whole dedup mechanism"):::gate
+    OK(["200<br/>chunks_indexed · kb · stats"]):::ok
+    subgraph WRITE["FOUR write targets — NO TRANSACTION · NO CROSS-STORE LOCK"]
+        V("① vector_store.add_documents<br/>ONE batch call · ids passed"):::step
+        B("② bm25_store.add_documents<br/>ONE batch call · no ids"):::step
+        GR("③ graph_store.add_document<br/>ONCE PER CHUNK ×N · re-pickles each time"):::step
+        REG("④ kb_registry.register<br/>chunks · vectors · entities · edges"):::step
+    end
+    UP --> G1
+    G1 -.->|"rejected"| E400
+    G1 -->|"allowed"| SAVE
+    SAVE --> CHUNK
+    CHUNK --> G2
+    G2 -.->|"none"| E422
+    G2 -->|"N chunks"| IDS
+    IDS --> DEL
+    DEL --> V
+    DEL --> B
+    DEL --> GR
+    V --> REG
+    B --> REG
+    GR --> REG
+    REG --> OK
+    classDef se fill:#047857,stroke:#059669,color:#FFFFFF,font-weight:600;
+    classDef step fill:#ECFDF5,stroke:#A7F3D0,color:#0F172A;
+    classDef gate fill:#DBEAFE,stroke:#3B82F6,color:#0C4A6E,font-weight:600;
+    classDef warn fill:#FEF3C7,stroke:#F59E0B,color:#0F172A,font-weight:600;
+    classDef ok fill:#DCFCE7,stroke:#22C55E,color:#14532D,font-weight:600;
+    style WRITE fill:#FFFBEB,stroke:#F59E0B,stroke-width:1.5px,color:#92400E;
+    linkStyle default stroke:#059669,stroke-width:1.5px;
+    linkStyle 1,5 stroke:#F59E0B,stroke-width:1.5px,stroke-dasharray:5 3;

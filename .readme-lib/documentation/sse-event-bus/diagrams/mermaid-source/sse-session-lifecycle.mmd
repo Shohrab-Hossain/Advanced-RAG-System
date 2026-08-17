@@ -1,0 +1,37 @@
+%%{init: {'theme':'base','fontFamily':'Plus Jakarta Sans, ui-sans-serif, system-ui, sans-serif','themeCSS':'.messageText { font-family: JetBrains Mono, ui-monospace, Consolas, monospace !important; font-size: 11px !important; fill:#6B7280 !important; } .noteText, .noteText tspan { font-family: Plus Jakarta Sans, ui-sans-serif, sans-serif !important; font-size: 12px !important; } .actor > tspan { font-weight:600 !important; } .labelText, .labelText tspan { font-family: JetBrains Mono, ui-monospace, Consolas, monospace !important; font-size: 11px !important; } .loopText, .loopText tspan { font-family: JetBrains Mono, ui-monospace, Consolas, monospace !important; font-size: 11px !important; }','themeVariables':{'fontSize':'14px','primaryTextColor':'#0F172A','lineColor':'#059669','primaryColor':'#ECFDF5','primaryBorderColor':'#A7F3D0','actorBkg':'#ECFDF5','actorBorder':'#059669','actorTextColor':'#0F172A','actorLineColor':'#A7F3D0','signalColor':'#059669','signalTextColor':'#6B7280','noteBkgColor':'#FEF3C7','noteBorderColor':'#F59E0B','noteTextColor':'#0F172A','labelBoxBkgColor':'#047857','labelBoxBorderColor':'#047857','labelTextColor':'#FFFFFF','loopTextColor':'#065F46','activationBkgColor':'#A7F3D0','activationBorderColor':'#059669','altSectionBkgColor':'#F8FAFC','sequenceNumberColor':'#FFFFFF'},'sequence':{'actorMargin':40,'width':150,'boxMargin':12,'messageAlign':'center','mirrorActors':false,'wrap':false,'noteAlign':'center','diagramMarginX':16,'diagramMarginY':12}}}%%
+sequenceDiagram
+    autonumber
+    participant B as Browser
+    participant R as Flask request thread
+    participant Q as queue.Queue
+    participant D as Daemon thread
+
+    B->>R: POST /api/query
+    Note over B,R: 400 on a blank query or an<br/>unknown provider — the only<br/>HTTP error status in the flow
+    R->>Q: create_session(uuid4())
+    Note over R,Q: an UNBOUNDED in-memory queue<br/>in _sessions, plus the 21-key<br/>initial_state with session_id
+
+    par producer — the pipeline
+        R->>D: Thread(target=_run, daemon=True).start()
+        D->>Q: emit(session_id, type, data)
+        Note over Q,D: emit() → q.put, from 31 call sites.<br/>A NO-OP for an unknown session — make<br/>it raise and a dead browser crashes<br/>the whole pipeline.
+    and consumer — the SSE generator
+        R-->>B: 200 text/event-stream
+        Note over B,R: the headers are now committed —<br/>every later failure is in-band
+        alt an item arrives within 180 s
+            Q->>R: q.get(timeout=180)
+            R-->>B: data: {json}
+            Note over B,R: the timeout is PER EVENT —<br/>the clock resets on every frame
+        else queue.Empty
+            R-->>B: data: error — Stream timeout
+            R->>Q: close_session() — pops the queue
+            Note over Q,D: Frees the SOCKET, never the COMPUTE.<br/>The daemon runs to completion, and<br/>every later emit() no-ops into an<br/>orphaned queue.
+        end
+    end
+
+    D->>Q: put done — bypasses emit()
+    D->>Q: finally: put(None) — sentinel
+    Q->>R: None
+    R-->>B: data: stream_end
+    R->>Q: close_session() — pops the queue
+    Note over B,D: done · error · stream_end are ROUTE-framed, not node-emitted.<br/>close_session() pushes a 2nd sentinel that nobody reads.

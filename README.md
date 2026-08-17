@@ -2,18 +2,20 @@
 
 # 🧬 adRAG
 
-### Multi-stage RAG pipeline — hybrid search, reranking, and self-reflection for grounded answers.
+### A multi-stage RAG pipeline that plans its own retrieval, searches three stores at once, and grades its own answer before returning it.
 
 <br>
 
-[![Version](https://img.shields.io/badge/version-1.0.0-7c5cff)](Frontend/package.json)
+[![Backend](https://img.shields.io/badge/backend-v0.1.0-3fb950)](Backend/pyproject.toml)
+[![Frontend](https://img.shields.io/badge/frontend-v1.0.0-3fb950)](Frontend/package.json)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776ab?logo=python&logoColor=white)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-3.0%2B-000000?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
-[![LangGraph](https://img.shields.io/badge/LangGraph-0.1%2B-1c3c3c)](https://langchain-ai.github.io/langgraph/)
+[![LangGraph](https://img.shields.io/badge/LangGraph-8%20nodes-1c3c3c)](https://langchain-ai.github.io/langgraph/)
 
 [![Vue](https://img.shields.io/badge/Vue-3.4-42b883?logo=vuedotjs&logoColor=white)](https://vuejs.org/)
 [![Tailwind](https://img.shields.io/badge/Tailwind-3.4-06b6d4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
-[![Providers](https://img.shields.io/badge/LLM-OpenAI%20%7C%20Ollama-f59e0b)](#%EF%B8%8F-9-configuration)
+[![Providers](https://img.shields.io/badge/LLM-OpenAI%20%7C%20Ollama-f59e0b)](#%EF%B8%8F-10-configuration)
+[![Transport](https://img.shields.io/badge/progress-SSE-7c5cff)](#44-the-seam-between-them)
 [![Status](https://img.shields.io/badge/status-active-3fb950)](#)
 
 </div>
@@ -33,33 +35,44 @@ adRAG
 │
 ├── <a href="#-2-features">✨ 2. Features</a>
 │
-├── <a href="#-3-how-it-works">🧠 3. How it works</a>
-│   ├── <a href="#31-system-architecture">3.1 System architecture</a>
-│   ├── <a href="#32-the-pipeline">3.2 The pipeline</a>
-│   ├── <a href="#33-the-three-retrieval-stores">3.3 The three retrieval stores</a>
-│   └── <a href="#34-the-reflection-loop">3.4 The reflection loop</a>
+├── <a href="#-3-the-rag-system">🧠 3. The RAG system</a>
+│   ├── <a href="#31-the-eight-nodes-end-to-end">3.1 The eight nodes end to end</a>
+│   ├── <a href="#32-the-planner-decides-whether-to-retrieve-at-all">3.2 The planner decides whether to retrieve at all</a>
+│   ├── <a href="#33-three-stores-answer-the-same-query">3.3 Three stores answer the same query</a>
+│   ├── <a href="#34-merge-then-rerank">3.4 Merge then rerank</a>
+│   ├── <a href="#35-compression-is-the-exception-not-the-rule">3.5 Compression is the exception not the rule</a>
+│   ├── <a href="#36-the-cited-answer">3.6 The cited answer</a>
+│   ├── <a href="#37-the-self-reflection-loop">3.7 The self-reflection loop</a>
+│   └── <a href="#38-what-a-retry-can-and-cannot-change">3.8 What a retry can and cannot change</a>
 │
-├── <a href="#%EF%B8%8F-4-tech-stack">🛠️ 4. Tech stack</a>
+├── <a href="#%EF%B8%8F-4-the-system-end-to-end">🏗️ 4. The system end to end</a>
+│   ├── <a href="#41-system-architecture">4.1 System architecture</a>
+│   ├── <a href="#42-the-backend-half">4.2 The backend half</a>
+│   ├── <a href="#43-the-frontend-half">4.3 The frontend half</a>
+│   └── <a href="#44-the-seam-between-them">4.4 The seam between them</a>
 │
-├── <a href="#-5-project-structure">📁 5. Project structure</a>
+├── <a href="#%EF%B8%8F-5-tech-stack">🛠️ 5. Tech stack</a>
 │
-├── <a href="#-6-getting-started">🚀 6. Getting started</a>
-│   ├── <a href="#61-prerequisites">6.1 Prerequisites</a>
-│   ├── <a href="#62-run-the-backend">6.2 Run the backend</a>
-│   ├── <a href="#63-run-the-frontend">6.3 Run the frontend</a>
-│   └── <a href="#64-your-first-query">6.4 Your first query</a>
+├── <a href="#-6-project-structure">📁 6. Project structure</a>
 │
-├── <a href="#-7-usage">💡 7. Usage</a>
+├── <a href="#-7-getting-started">🚀 7. Getting started</a>
+│   ├── <a href="#71-prerequisites">7.1 Prerequisites</a>
+│   ├── <a href="#72-run-the-backend">7.2 Run the backend</a>
+│   ├── <a href="#73-run-the-frontend">7.3 Run the frontend</a>
+│   ├── <a href="#74-run-both-halves-at-once">7.4 Run both halves at once</a>
+│   └── <a href="#75-your-first-query">7.5 Your first query</a>
 │
-├── <a href="#-8-api">🔌 8. API</a>
+├── <a href="#-8-usage">💡 8. Usage</a>
 │
-├── <a href="#%EF%B8%8F-9-configuration">⚙️ 9. Configuration</a>
+├── <a href="#-9-api">🔌 9. API</a>
 │
-├── <a href="#%EF%B8%8F-10-known-gaps">⚠️ 10. Known gaps</a>
+├── <a href="#%EF%B8%8F-10-configuration">⚙️ 10. Configuration</a>
 │
-├── <a href="#-11-documentation">📚 11. Documentation</a>
+├── <a href="#%EF%B8%8F-11-known-gaps">⚠️ 11. Known gaps</a>
 │
-└── <a href="#%EF%B8%8F-12-roadmap">🗺️ 12. Roadmap</a>
+├── <a href="#-12-documentation">📚 12. Documentation</a>
+│
+└── <a href="#%EF%B8%8F-13-roadmap">🗺️ 13. Roadmap</a>
 </pre>
 
 <br>
@@ -70,28 +83,37 @@ adRAG
 
 ## 📖 1. OVERVIEW
 
-**adRAG** is a multi-stage Retrieval-Augmented Generation pipeline that combines **hybrid search**
-(vector + BM25 + graph), **cross-encoder reranking**, and a **self-reflection agent** to generate
-grounded, cited answers from your own documents.
+**adRAG** is a Retrieval-Augmented Generation system built around the idea that one similarity search
+is not enough. It runs an **eight-node LangGraph pipeline** that decides whether retrieval is needed at
+all, queries **three different stores** over the same corpus, reranks the merged evidence with a
+cross-encoder, and then runs a **second LLM as a critic** that reads the answer back against the
+evidence and can send the whole thing round again.
 
 It ships as two independently runnable halves:
 
-- **Backend** — a Flask REST + Server-Sent Events API wrapped around an eight-node **LangGraph**
-  pipeline. It ingests documents, retrieves over three stores, reranks, compresses context, and
-  generates an answer that is checked for grounding before it is returned.
-- **Frontend** — a **Vue 3** single-page app that drives the pipeline and renders its progress live
-  from the SSE stream: chat, knowledge-base management, and LLM provider configuration.
+- **Backend** — a Flask REST + Server-Sent Events API wrapped around the pipeline. It ingests
+  documents, retrieves, reranks, compresses, generates a cited answer, and verifies the answer's
+  grounding before returning it.
+- **Frontend** — a Vue 3 single-page app that drives the pipeline and renders its progress live from
+  the SSE stream: chat, knowledge-base management, and provider configuration.
 
-The problem it targets is the one every naive RAG system hits — a single similarity search returns
-plausible-looking chunks, the model answers from them regardless of whether they support the claim,
-and nobody can tell where the answer came from. adRAG attacks that from three sides: it retrieves the
+The problem it targets is the one every naive RAG system hits. A single vector search returns
+plausible-looking chunks; the model answers from them whether or not they support the claim; and
+nobody can tell where the answer came from. adRAG attacks that from three sides — it retrieves the
 same corpus three different ways so keyword-exact and entity-linked evidence survives alongside
-semantic matches, it reranks the merged pool with a cross-encoder that reads the query and the
-passage together, and it re-reads its own answer against the evidence before shipping it.
+semantic matches, it reranks the merged pool with a model that reads the query and the passage
+*together*, and it re-reads its own answer against the evidence before shipping it.
 
 > [!NOTE]
-> Everything runs locally against your own store. The LLM is either **OpenAI** or a local **Ollama**
-> server — chosen per request — and web search (DuckDuckGo) is optional and needs no API key.
+> Everything runs locally against your own documents. The LLM is either **OpenAI** or a local
+> **Ollama** server, chosen per request, and web search (DuckDuckGo) is optional and needs no API key.
+> Nothing but the LLM call leaves the machine.
+
+> [!CAUTION]
+> **This is a localhost project as it stands.** There is no authentication on any route,
+> `DELETE /api/clear` wipes the whole index in one unauthenticated request, the CORS allowlist ends in
+> a literal `"*"`, and `FLASK_DEBUG` defaults to `true`. See [§11](#%EF%B8%8F-11-known-gaps) and
+> [`Backend/Documentation/security.md`](Backend/Documentation/security.md) before exposing the port.
 
 <br>
 
@@ -101,29 +123,31 @@ passage together, and it re-reads its own answer against the evidence before shi
 
 ## ✨ 2. FEATURES
 
+- 🧭 **A Self-RAG planner** — an LLM decision node runs *first* and decides whether the knowledge base
+  should be searched at all, whether to reach for web search, and what kind of question this is. A
+  greeting or a general-knowledge question never touches the corpus.
 - 🔍 **Hybrid retrieval over three stores** — a dense vector index (ChromaDB by default, FAISS opt-in),
-  a BM25 keyword index, and a NetworkX knowledge graph, all queried on every retrieval pass.
-- 🧭 **A Self-RAG planner** — an LLM decision node that first decides *whether* retrieval is needed at
-  all, whether to reach for external tools, and what kind of query it is (`factual`, `analytical`,
-  `conversational`).
+  a BM25 keyword index, and a NetworkX entity graph, all queried on every retrieval pass.
 - 🎯 **Cross-encoder reranking** — `cross-encoder/ms-marco-MiniLM-L-6-v2` scores every
-  `(query, document)` pair and keeps the top 5, with a graceful fall-back to score-sorted results if
-  the model fails to load.
-- 🗜️ **Threshold-triggered context compression** — evidence passes through untouched below
-  `MAX_CONTEXT_CHARS` (4000); only above it does an LLM compression pass run.
-- 🔁 **A bounded self-reflection loop** — the answer is graded for grounding, and a failed grade
-  triggers up to `MAX_REFLECTION_RETRIES` (2) more attempts, for at most three passes in total.
-- 🌐 **Automatic web-search escalation** — when a retry follows an empty or irrelevant knowledge-base
-  hit, reflection turns on DuckDuckGo search for the next attempt.
-- 📡 **Live pipeline streaming** — ten Server-Sent Event types report every stage start, completion,
-  skip, error, and retry as it happens, so the UI shows the pipeline working rather than a spinner.
-- 🧾 **Cited answers** — the generator emits inline `[1]`, `[2]` citations and the source list is
-  filtered down to only the documents it actually cited.
-- 🔌 **Dual LLM providers** — OpenAI or Ollama, selected per request, with a live availability probe
-  and model list behind `GET /api/providers`.
-- 📚 **Knowledge-base management** — upload `.pdf` / `.txt` / `.md` / `.docx` (up to 50 MB), list what
-  is indexed, delete a single knowledge base, or clear everything; re-uploading the same file replaces
-  its data instead of duplicating it.
+  `(query, passage)` pair and keeps the top five. It is the only place in the pipeline where a single
+  comparable relevance number exists.
+- 🗜️ **Threshold-triggered compression** — evidence passes through untouched below `MAX_CONTEXT_CHARS`
+  (4000). Only above it does an LLM compression pass run, so the common case costs nothing.
+- 🔁 **A bounded self-reflection loop** — a second LLM grades the answer for grounding, and a failed
+  grade can send the pipeline back to retrieval up to `MAX_REFLECTION_RETRIES` (2) more times, for at
+  most three passes total.
+- 🌐 **Evidence-driven web escalation** — when a retry follows an empty or irrelevant knowledge-base
+  hit, reflection turns DuckDuckGo search on for the next attempt.
+- 📡 **Live pipeline streaming** — 31 emit sites across the eight nodes produce seven event types, and
+  the route frames four more, so the UI shows the pipeline *working* rather than a spinner.
+- 🧾 **Cited answers** — the generator emits inline `[1]`, `[2]` citations, and the source list is
+  filtered down to the documents the model actually cited.
+- 🔌 **Two LLM providers** — OpenAI or Ollama, selected per request, with a live availability probe and
+  model list behind `GET /api/providers`. The API key never leaves the server; availability is reported
+  as a boolean.
+- 📚 **Knowledge-base management** — upload any of **35 file types** (up to 50 MB), see what is
+  indexed, delete one knowledge base or clear everything. Re-uploading the same bytes replaces that
+  document's data instead of duplicating it.
 
 <br>
 
@@ -131,116 +155,195 @@ passage together, and it re-reads its own answer against the evidence before shi
 
 <br>
 
-## 🧠 3. HOW IT WORKS
+## 🧠 3. THE RAG SYSTEM
 
-### 3.1 System architecture
+This is the part of the project everything else exists to serve. The full engineering treatment lives
+in [`Backend/Documentation/rag-pipeline/`](Backend/Documentation/rag-pipeline/README.md); this section
+is the working explanation.
 
-The browser never talks to a store directly. The Vue SPA calls the Flask API, Flask runs the compiled
-LangGraph pipeline on a background thread, and every stage the pipeline enters is pushed back to the
-browser over one long-lived SSE response.
+### 3.1 The eight nodes end to end
 
-<p align="center">
-  <img src=".readme-lib/readme/diagrams/svg/system-architecture.svg" alt="Architecture map: the Vue 3 SPA on localhost:8080 calls the Flask API on localhost:5000 through the dev proxy; Flask runs the LangGraph pipeline on a daemon thread, whose retrieval node queries the Chroma/FAISS, BM25 and NetworkX stores, whose external_tools node calls DuckDuckGo, and whose LLM nodes call OpenAI or Ollama; the pipeline emits into a per-query SSE session queue that streams back to the browser." width="760">
-</p>
-
-<sub>Diagram source: <a href=".readme-lib/readme/diagrams/mermaid-source/system-architecture.mmd"><code>system-architecture.mmd</code></a> — edit it, then regenerate the SVG (don't hand-edit the SVG).</sub>
-
-The moving parts:
-
-| Piece | Where it runs | Responsibility |
-|---|---|---|
-| Vue 3 SPA | `localhost:8080` (dev server) | Four routes, twelve components, two Pinia stores; renders the live pipeline |
-| Dev proxy | Vue CLI dev server | Forwards `/api/*` to `http://localhost:5000`, so the SPA has no CORS hop in development |
-| Flask API | `0.0.0.0:5000`, threaded | Eight `/api` routes; owns upload, store queries, and the SSE session |
-| LangGraph pipeline | Daemon thread per query | The eight nodes; compiled once into a module-level `rag_graph` singleton |
-| Stores | On disk under `Backend/data/databases/` | Chroma or FAISS, BM25, and the NetworkX graph — each a process-wide singleton |
-| LLM providers | OpenAI API or a local Ollama server | Chosen per request; instances cached by provider, temperature, JSON mode, and model |
-
-SSE mechanics: each query gets a `uuid4` session id mapped to a `queue.Queue`. The pipeline runs in a
-daemon thread and emits into that queue; the HTTP response drains the queue with a **180-second**
-timeout and closes on a `None` sentinel, sending a literal `stream_end` frame last. The response
-carries `Cache-Control: no-cache`, `X-Accel-Buffering: no`, and `Connection: keep-alive` so no
-intermediary buffers the stream.
-
-### 3.2 The pipeline
-
-Eight nodes, registered in order as `planner`, `retrieval`, `external_tools`, `aggregate`, `rerank`,
-`compress`, `reason`, `reflect`. Entry is `planner`; two of the edges are conditional.
+The pipeline is a LangGraph state machine built in
+`Backend/src/adrag/custom_packages/rag_pipeline/workflow.py` and compiled once into a module-level
+`rag_graph` singleton. Eight nodes are registered, the entry point is `planner`, and **two of the edges
+are conditional**.
 
 <p align="center">
-  <img src=".readme-lib/readme/diagrams/svg/rag-pipeline-flow.svg" alt="Pipeline flow: a user query enters the planner, which branches three ways — to retrieval, straight to external_tools, or straight to aggregate; retrieval flows into external_tools, then the linear spine aggregate, rerank, compress, reason; reflect then either returns the cited answer or loops back to retrieval for up to two retries." width="360">
+  <img src=".readme-lib/readme/diagrams/svg/rag-pipeline-flow.svg" alt="Pipeline flow: a user query enters the planner, which branches three ways — to retrieval (vector, BM25, graph), straight to external_tools (DuckDuckGo), or straight to aggregate (merge and dedup by MD5); retrieval flows into external_tools, then the linear spine aggregate, rerank (cross-encoder, top 5), compress (only above 4000 characters), reason (cited answer); reflect then either emits the cited answer or loops back to retrieval for at most two retries." width="360">
 </p>
 
 <sub>Diagram source: <a href=".readme-lib/readme/diagrams/mermaid-source/rag-pipeline-flow.mmd"><code>rag-pipeline-flow.mmd</code></a> — edit it, then regenerate the SVG (don't hand-edit the SVG).</sub>
 
-The routing rules, exactly:
+| # | Node | What it contributes | LLM call? |
+|---|---|---|---|
+| 1 | `planner` | Decides `retrieve`, `use_external`, and a `query_type` label | ✅ |
+| 2 | `retrieval` | Three store searches — vector, BM25, graph | ❌ |
+| 3 | `external_tools` | DuckDuckGo web search; self-skips when not wanted | ❌ |
+| 4 | `aggregate` | Concatenates all four result lists and deduplicates | ❌ |
+| 5 | `rerank` | Cross-encoder scores every candidate; keeps the top 5 | ❌ (a local model) |
+| 6 | `compress` | Shrinks the context — but only above the character threshold | conditional |
+| 7 | `reason` | Writes the answer with inline citations | ✅ |
+| 8 | `reflect` | Grades the answer, then either retries or terminates | ✅ |
 
-- **`planner` is a three-way branch.** `retrieve = true` goes to `retrieval`; otherwise
-  `use_external = true` goes straight to `external_tools`; otherwise it skips both and goes to
-  `aggregate`.
-- **`retrieval` always flows into `external_tools`**, which self-skips (emitting a skip event) when
-  `use_external` is false.
-- **The spine is linear** from there: `external_tools` → `aggregate` → `rerank` → `compress` →
-  `reason` → `reflect`.
-- **`reflect` is the second conditional edge.** If a `final_answer` has been set, the graph ends;
-  otherwise it loops back to `retrieval` for another attempt.
+The spine from `external_tools` onward is linear: `aggregate` → `rerank` → `compress` → `reason` →
+`reflect`. **There is exactly one loop edge in the whole graph — `reflect` back to `retrieval`.**
 
-What each node actually does:
+> [!IMPORTANT]
+> **`final_answer` is the termination signal, and it is the only one.** The reflection router
+> (`_route_reflection`, `workflow.py:47`) tests `state["final_answer"]` for truthiness and nothing
+> else — not `grounded`, not `retry_count`, not the retry budget. Any node that writes a non-empty
+> `final_answer` ends the graph; any path that reaches `reflect` without one loops back to retrieval.
+> The retry budget is enforced *inside* the reflection node, not by the router.
 
-| Node | Behaviour |
-|---|---|
-| `planner` | Self-RAG decision. The LLM returns JSON `{retrieve, use_external, query_type, reasoning}`. On any exception it fails safe to `retrieve=true`, `use_external=false`, `query_type="factual"`. |
-| `retrieval` | Queries all three stores sequentially in one function — vector, BM25, and graph — each with `RETRIEVAL_TOP_K` (10); the graph store uses `max(TOP_K // 2, 3)`. |
-| `external_tools` | DuckDuckGo web search, no API key, five results. Imports `ddgs` and falls back to the legacy `duckduckgo_search` package; on `ImportError` or any exception it degrades to an empty result set rather than failing the query. |
-| `aggregate` | Merges vector, BM25, graph, and web results, deduplicates by **MD5 of the content** keeping the highest-scoring copy, and sorts by score descending. |
-| `rerank` | Cross-encoder scores every `(query, document)` pair, sorts, and keeps `RERANK_TOP_K` (5). The model is a lazy singleton; on failure it falls back to the score-sorted top-k. |
-| `compress` | Builds numbered `[n] label` + content blocks. If the total is at or below `MAX_CONTEXT_CHARS` it passes through **unchanged** — the compression LLM only runs above the threshold, and its input is truncated to 10 000 characters. |
-| `reason` | Generates JSON `{answer, confidence, cited_sources, key_facts, is_sufficient}` with inline `[1]`, `[2]` citations, then filters the source list down to the ones actually cited. With no context at all it takes a direct-answer path. |
-| `reflect` | Grades the answer: `{grounded, confidence, issues, feedback, should_retry}`. It retries only when the answer is **not** grounded, `should_retry` is true, **and** the retry budget is unspent. A non-grounded final answer gets a caveat line appended. |
+### 3.2 The planner decides whether to retrieve at all
 
-### 3.3 The three retrieval stores
+The first node is a Self-RAG decision. The LLM is asked for JSON —
+`{retrieve, use_external, query_type, reasoning}` — and the router reads the two booleans:
 
-Every retrieval pass hits all three. They find different things on purpose — semantic neighbours,
-exact terms, and entity-linked neighbours — and the aggregator merges them.
+```python
+# workflow.py:38
+def _route_planner(state: RAGState) -> str:
+    if state.get("retrieve", True):
+        return "retrieval"
+    if state.get("use_external", False):
+        return "external_tools"
+    return "aggregate"    # direct answer: skip all retrieval
+```
 
-| Store | Library | What it finds | `source` tag | Persistence |
+`retrieve` is true for questions about your uploaded documents and false for general world knowledge,
+maths, greetings, and coding questions. `use_external` is true only for recent events and live data.
+
+Two consequences worth knowing:
+
+- **On the `retrieve = true` path, `use_external` never reaches the router.** `retrieval` flows into
+  `external_tools` on a static edge, and that node decides for itself whether to run — emitting a skip
+  event when it does not. So web search still happens on that path if the planner asked for it.
+- **The planner fails toward retrieval.** Any exception in the node returns
+  `retrieve=True, use_external=False, query_type="factual"`, so an LLM hiccup degrades to a plain RAG
+  query rather than an unsourced direct answer.
+
+### 3.3 Three stores answer the same query
+
+The retrieval node runs three searches over the same corpus. They find different things on purpose.
+
+| Store | Library | What it finds | Width | Score scale |
 |---|---|---|---|---|
-| Dense vector (default) | ChromaDB `PersistentClient`, collection `rag_documents`, cosine space | Semantic similarity | `vector` | On-disk Chroma directory at `CHROMA_PATH` |
-| Dense vector (opt-in) | FAISS `IndexFlatIP` over L2-normalised vectors, which is cosine similarity | Semantic similarity | `vector` | Pickle plus an `.idx` sidecar at `FAISS_PATH` |
-| Sparse keyword | `rank_bm25.BM25Okapi` over lower-cased `\b\w+\b` tokens | Exact term and keyword overlap; only results scoring above zero are returned | `bm25` | Pickled corpus and metadata at `BM25_PATH`; the index is rebuilt on load |
-| Knowledge graph | NetworkX `nx.Graph`, bipartite document ↔ entity | Entity-linked chunks via a two-hop traversal — first hop weighted ×2.0, second hop +0.5 | `graph` | Pickled graph and document store at `GRAPH_PATH` |
+| Dense vector | ChromaDB `PersistentClient`, cosine space (FAISS `IndexFlatIP` opt-in) | Semantic neighbours | `RETRIEVAL_TOP_K` = 10 | `1.0 - distance`, roughly 0–1 |
+| Sparse keyword | `rank_bm25.BM25Okapi` over lower-cased `\b\w+\b` tokens | Exact terms and rare words | 10 | Raw BM25, **unbounded**, zero-scoring hits dropped |
+| Entity graph | NetworkX bipartite document ↔ entity graph | Chunks linked to entities in the question | `max(10 // 2, 3)` = 5 | Traversal weight, **unbounded** |
 
-Three details worth knowing before you extend any of this:
+Three details that shape how the system behaves:
 
-- **Entity extraction is regex, not an LLM.** The graph store picks up multi-word proper nouns,
-  two-to-six-character acronyms, and camelCase identifiers, then subtracts a 25-word stop list. It is
-  cheap and deterministic — and it will not find entities that don't look like those three shapes.
-- **All three stores are process-wide singletons**, guarded in `__new__`, as is the
-  `SentenceTransformer` embedder (created lazily on first use).
-- **Selecting `faiss` without the package installed raises a `RuntimeError` at import.** The switch is
-  `VECTOR_BACKEND`, and `faiss-cpu` is an optional dependency.
+- **The three searches are sequential, not parallel.** They are three ordinary function calls in one
+  node — no thread pool, no `asyncio`.
+- **Entity extraction is regex, not a model.** The graph store recognises multi-word capitalised proper
+  nouns, 2–6 character acronyms, and camelCase identifiers, minus a 26-word stop list. First-hop
+  documents score `edge_weight × 2.0`, second-hop documents `+0.5` per path. A lower-case question with
+  no proper nouns yields nothing from the graph at all — the store returns an empty list immediately.
+- **Web results, when enabled, carry a fixed score of `0.7`** and a hardcoded width of five.
 
-Deleting a knowledge base prunes its chunks from all three stores and also removes entity nodes in the
-graph that no longer link to any document.
+> [!WARNING]
+> **The `score` field is not comparable across stores.** A cosine similarity of `0.82`, a raw BM25
+> score of `8.2`, and a graph traversal weight of `4.5` share one `float` field and mean three
+> different things. **Only `rerank_score` is comparable** — never rank on `score`.
 
-### 3.4 The reflection loop
+### 3.4 Merge then rerank
 
-Reflection is what separates this pipeline from a one-shot RAG chain. After `reason` produces an
-answer, `reflect` grades it against the retrieved evidence and decides whether the pipeline is done.
+`aggregate` concatenates the four lists in a fixed order (vector, BM25, graph, web) and deduplicates by
+the **MD5 of the chunk text**, keeping the highest-scoring copy. That is exact-string identity: a
+near-duplicate, or the same passage chunked at a different offset, does not collapse.
 
-- **The verdict** is JSON: `{grounded, confidence, issues, feedback, should_retry}`.
-- **The retry condition** is a conjunction — the answer must be **not grounded**, reflection must set
-  `should_retry`, and `retry_count` must still be below `MAX_RETRIES`.
-- **The budget** is `MAX_REFLECTION_RETRIES`, default `2`, which means **at most three passes** in
-  total.
-- **Escalation to the web is conditional and evidence-driven.** On a retry, if the knowledge base
-  looked insufficient — zero context documents, or a maximum rerank score below zero — and
-  `use_external` was false, reflection flips it to true so the next attempt adds web search. The
-  negative-score test is deliberate: the ms-marco cross-encoder returns negative logits for pairs it
-  considers irrelevant, so "the best passage scored below zero" is a usable signal that the corpus
-  simply doesn't contain the answer.
-- **When the budget runs out**, the answer is still returned — with a caveat line appended noting it
-  could not be fully grounded.
+`rerank` is where the incomparable scales are resolved. A cross-encoder reads each `(query, passage)`
+pair *together* and emits one number on one scale; the node sorts on it and slices to `RERANK_TOP_K`
+(5). That slice becomes the context every downstream node sees.
+
+> [!IMPORTANT]
+> **`rerank_score` is a raw logit, not a 0–1 probability, and negative values are meaningful** — the
+> default ms-marco cross-encoder returns negative scores for pairs it considers irrelevant. That sign
+> is load-bearing: the reflection node's web-escalation test is *"was the best passage scored below
+> zero?"* Swap in a reranker with a non-negative output range and escalation silently stops firing.
+
+The reranker is the pipeline's dominant local compute — one forward pass per candidate, and at the
+defaults there are up to thirty of them (ten vector, ten BM25, five graph, five web) before dedup. If the model fails to load, the node falls back to sorting by the raw `score`
+and keeps going; the answer still arrives, just ranked by an incomparable field.
+
+### 3.5 Compression is the exception not the rule
+
+`compress` assembles the surviving documents into numbered blocks — `[1] filename`, `[2] filename` —
+and measures the total. Below `MAX_CONTEXT_CHARS` (4000) it returns that text **verbatim and makes no
+LLM call at all**. At the defaults that is the common case: five chunks of 500 characters is about
+2500. Only a long context triggers the compression prompt, and even then the model sees at most the
+first 10 000 characters.
+
+Those `[1]`, `[2]` labels are not decoration — they are the same 1-based ordering the answer generator
+uses to build its source list, which is what makes the citations line up.
+
+### 3.6 The cited answer
+
+`reason` builds the source list *first*, one entry per context document, then asks the LLM for JSON:
+`{answer, confidence, cited_sources, key_facts, is_sufficient}`. The prompt requires the answer to use
+only the provided context and to carry inline `[n]` citations.
+
+Then it filters:
+
+```python
+# reasoning.py:93
+cited_indices = set(result.get("cited_sources", []))
+cited_sources = [s for s in sources if s["index"] in cited_indices]
+```
+
+**Only sources the model explicitly cited survive into the response.** A retrieved-but-uncited document
+is invisible in the UI, and an answer written from the model's own training knowledge comes back with
+an empty `sources` array. That is normal behaviour, not a bug — and it is the mechanism behind "the
+answer has no sources".
+
+If there is no context at all — the planner's direct-answer path — the node takes a plain,
+non-JSON branch and returns `sources: []` explicitly.
+
+### 3.7 The self-reflection loop
+
+Reflection is what separates this pipeline from a one-shot chain. A second LLM call, with the same
+provider and the same temperature, receives the question, the retrieved context, and the answer, and
+returns `{grounded, confidence, issues, feedback, should_retry}`.
+
+A retry happens only when **all three** of these hold:
+
+```python
+# reflection.py:97
+will_retry = (not grounded) and raw_retry and (retry_count < MAX_RETRIES)
+```
+
+1. the critic judged the answer **not grounded**;
+2. the critic **also** asked for a retry — it can call an answer ungrounded and still decline to try
+   again;
+3. the budget is unspent — `MAX_REFLECTION_RETRIES` defaults to `2`, so **three passes maximum**.
+
+**Escalation to the web is evidence-driven.** On a retry, if the knowledge base looked insufficient —
+zero context documents, or a best `rerank_score` below zero — and web search was not already on,
+reflection flips `use_external` to true so the next pass adds DuckDuckGo results. It is the only place
+outside the planner that writes that flag.
+
+When the budget runs out the answer is still returned, with a caveat line appended noting that some
+claims may not be fully supported. And if reflection itself raises, it **fails open**: it marks the
+answer grounded, sets `final_answer`, and terminates — a broken critic ends the run rather than
+looping forever.
+
+### 3.8 What a retry can and cannot change
+
+This is the most important honest limit in the system, and it follows from three facts that are each
+individually reasonable:
+
+- Every LLM call uses `temperature=0`; no node overrides it.
+- A node's returned keys **overwrite** rather than accumulate, so a second retrieval pass *replaces*
+  the first pass's documents instead of adding to them.
+- `reflection_feedback` is written on every reflection pass and **read by nothing**. The critique
+  reaches the browser as the `reason` field of a `retry` event, but no prompt is changed by it.
+
+Put together: a retry that does **not** escalate re-runs the identical query against the identical
+corpus with the identical prompt at temperature zero — and so produces the same answer, which the
+critic then judges the same way. **The retry budget can only change the outcome when escalation fires
+and adds web documents.** Feeding the critique back into the next attempt, or raising the temperature
+on a retry, are the two obvious ways to make the loop earn its cost; neither exists today.
 
 <br>
 
@@ -248,11 +351,109 @@ answer, `reflect` grades it against the retrieved evidence and decides whether t
 
 <br>
 
-## 🛠️ 4. TECH STACK
+## 🏗️ 4. THE SYSTEM END TO END
 
-**Backend** — Python 3.10+ is a hard requirement, not a preference: the source uses PEP 604 unions
-(`str | None`) evaluated at runtime in signatures, with no `from __future__ import annotations`
-anywhere. Pins below are the exact lower bounds from `Backend/requirements.txt`.
+### 4.1 System architecture
+
+The browser never talks to a store. The Vue SPA calls the Flask API, Flask runs the compiled pipeline
+on a background thread, and every stage the pipeline enters is pushed back to the browser over one
+long-lived SSE response.
+
+<p align="center">
+  <img src=".readme-lib/readme/diagrams/svg/system-architecture.svg" alt="Architecture map: the Vue 3 SPA on localhost:8080 calls the Flask API on localhost:5000 through the dev proxy; Flask runs the LangGraph pipeline on a daemon thread, whose retrieval node queries the Chroma or FAISS, BM25 and NetworkX stores under Backend/data/databases, whose external_tools node calls DuckDuckGo, and whose LLM nodes call the OpenAI API or a local Ollama server on port 11434; the pipeline emits into a per-query SSE session queue that is drained back to the browser." width="760">
+</p>
+
+<sub>Diagram source: <a href=".readme-lib/readme/diagrams/mermaid-source/system-architecture.mmd"><code>system-architecture.mmd</code></a> — edit it, then regenerate the SVG (don't hand-edit the SVG).</sub>
+
+| Piece | Where it runs | Responsibility |
+|---|---|---|
+| Vue 3 SPA | `localhost:8080` (dev server) | Four lazy routes, 13 components, three Pinia stores; renders the live pipeline |
+| Dev proxy | Vue CLI dev server | Forwards `/api/*` to `http://localhost:5000`, so development has no cross-origin hop |
+| Flask API | `0.0.0.0:5000`, threaded | Eight routes across four blueprints; owns upload, store access, and the SSE session |
+| LangGraph pipeline | A daemon thread per query | The eight nodes, compiled once into `rag_graph` |
+| Stores | On disk under `Backend/data/databases/` | Chroma (or FAISS), BM25, and the entity graph — each a process-wide singleton |
+| LLM providers | The OpenAI API or a local Ollama server | Chosen per request; instances cached by provider, temperature, JSON mode, and model |
+
+### 4.2 The backend half
+
+A Flask application factory that carries **zero route decorators**. Every route lives in
+`routes/<resource>/<resource>_routes.py` behind its own blueprint, and the factory registers them by
+iterating one tuple:
+
+```python
+# adrag/app.py:51
+for blueprint in BLUEPRINTS:
+    app.register_blueprint(blueprint)
+```
+
+Adding an endpoint is a folder plus one line in `routes/__init__.py` — nothing in `app.py` changes.
+Behind the routed layer sits `custom_packages/rag_pipeline/`, the capability nothing routes to: it
+never imports Flask, never imports upward into `app.py`, and reaches the browser only through the
+event bus.
+
+> [!IMPORTANT]
+> **The server runs as exactly one process with one worker, and that is a correctness constraint.**
+> The SSE session registry is a plain module-level dict and every store is a module singleton, so
+> forking splits the event producer from its consumer *and* gives each worker a divergent BM25 corpus
+> and graph. That is why development uses `threaded=True` and production uses gunicorn's `-w 1`.
+> Concurrent *queries* are fine — each gets its own session, queue, and thread. Concurrent *ingest* is
+> not: the stores are unsynchronised, and only the knowledge-base registry holds a lock.
+
+### 4.3 The frontend half
+
+A Vue 3 SPA built with **Vue CLI / webpack** (not Vite). Four lazily-imported routes, 13 components,
+three Pinia stores in setup style, and two axios clients — each constructing its own instance.
+
+The placement rules are deliberately different for the two kinds of thing, and both are load-bearing:
+**components are placed by ownership** (a component used by one page lives under that page; it moves to
+`shared/` only when a second page imports it), while **state and HTTP clients are flat by kind**
+(`store/ragStore.js`, `services/kbApi.js` — the domain lives in the filename, not a directory).
+
+Nothing points upward: no store imports a component, no service imports a store, and `shared/` never
+imports `pages/`. There is exactly one accepted exception to *"components call store actions, not
+services"* — the navigation bar imports the health check directly to drive its connection dot.
+
+### 4.4 The seam between them
+
+One `POST` opens a stream and the pipeline narrates itself down it.
+
+- **The transport is `fetch` + `ReadableStream`, not `EventSource`.** `EventSource` is GET-only and the
+  query has to be sent as a POST body, so the client reads the frames by hand — and therefore gets no
+  automatic reconnection.
+- **Each query gets a `uuid4` session id mapped to an unbounded `queue.Queue`.** The pipeline runs on a
+  daemon thread and pushes into that queue; the HTTP response drains it with a **180-second per-event**
+  timeout and closes on a `None` sentinel, sending a literal `stream_end` frame last.
+- **Errors are in-band.** Only two failures produce an HTTP error status — a blank query and an unknown
+  provider, both `400`, both before the stream opens. Once the response headers are on the wire the
+  status is `200` forever, so a pipeline failure arrives as an `error` **event** on a successful
+  response. A client that reads the status code to decide whether a query succeeded will report every
+  failed run as a success.
+- **A disconnect frees the socket, never the compute.** The daemon thread runs to completion
+  regardless; the emit function is a deliberate no-op once its session is gone.
+
+**Eleven event types reach the browser** — seven emitted by pipeline nodes and four framed by the route
+(`done`, two shapes of `error`, and `stream_end`).
+
+> [!WARNING]
+> **An SSE `stage` id is not the graph node name — five of the eight differ.** The graph registers
+> `aggregate`, `rerank`, `compress`, `reason`, `reflect`, but the frames those nodes emit carry
+> `aggregator`, `reranker`, `compressor`, `reasoning`, `reflection`. Only `planner`, `retrieval` and
+> `external_tools` coincide. The frontend's stage list must equal the **emitted** set, and an
+> unrecognised stage id is dropped silently — no error, no console warning. Rename a node and nothing
+> breaks; change an emitted `stage` literal and that tracker row stops updating forever.
+
+<br>
+
+---
+
+<br>
+
+## 🛠️ 5. TECH STACK
+
+**Backend** — Python 3.10+ is a hard requirement, not a preference: PEP 604 unions (`str | None`) are
+evaluated at runtime in module and signature scope and no file carries
+`from __future__ import annotations`, so 3.9 fails at import. Dependencies live in
+`Backend/pyproject.toml`; `requirements.txt` is a one-line `-e .` pointer.
 
 | Role | Package | Minimum |
 |---|---|---|
@@ -261,16 +462,17 @@ anywhere. Pins below are the exact lower bounds from `Backend/requirements.txt`.
 | Pipeline | `langgraph` | `>=0.1.0` |
 | LLM abstraction | `langchain` · `langchain-text-splitters` · `langchain-community` | `>=0.2.0` (each) |
 | Provider bindings | `langchain-openai` · `langchain-ollama` | `>=0.1.0` (each) |
-| Dense vector store | `chromadb` (default) · `faiss-cpu` (optional) | `>=0.5.0` · `>=1.7.4` |
+| Dense vector store | `chromadb` (default) · `faiss-cpu` (`faiss` extra) | `>=0.5.0` · `>=1.7.4` |
 | Embeddings + reranking | `sentence-transformers` | `>=3.0.0` |
 | Sparse retrieval | `rank-bm25` | `>=0.2.2` |
 | Knowledge graph | `networkx` | `>=3.3` |
-| Document loaders | `pypdf` · `docx2txt` · `unstructured` | `>=4.0.0` · `>=0.8` · `>=0.14.0` |
+| Document loaders | `pypdf` · `docx2txt` · `unstructured` · `markdown` | `>=4.0.0` · `>=0.8` · `>=0.14.0` · `>=3.6` |
 | Web search | `ddgs` | `>=7.0.0` |
 | Utilities | `numpy` · `requests` | `>=1.26.0` · `>=2.31.0` |
+| Production server (`prod` extra) | `gunicorn` · `gevent-websocket` | `>=21.0.0` · `>=0.10.1` |
 
-**Frontend** — Vue CLI 5 / webpack (not Vite), from `Frontend/package.json`. Node.js 18 or newer is
-what the frontend documentation calls for; nothing in the manifest pins an engine.
+**Frontend** — Vue CLI 5 / webpack, from `Frontend/package.json`. Node.js 18 or newer is what the
+toolchain expects; nothing in the manifest pins an engine.
 
 | Role | Package | Version |
 |---|---|---|
@@ -280,7 +482,12 @@ what the frontend documentation calls for; nothing in the manifest pins an engin
 | HTTP | `axios` | `^1.7.0` |
 | Markdown rendering | `marked` | `^12.0.0` |
 | Build | `@vue/cli-service` · `@vue/cli-plugin-babel` | `^5.0.8` (each) |
+| Linting | `eslint` · `eslint-plugin-vue` · `@vue/cli-plugin-eslint` | `^8.57.0` · `^9.27.0` · `^5.0.8` |
 | Styling | `tailwindcss` · `postcss` · `autoprefixer` | `^3.4.0` · `^8.4.0` · `^10.4.0` |
+| Doc tooling (dev only) | `@mermaid-js/mermaid-cli` · `svgo` | `^11.16.0` · `^4.0.2` |
+
+The last row is **documentation tooling, not application code** — it renders the `.mmd` sources under
+`.readme-lib/` into the committed SVGs these docs embed. Nothing in `Frontend/src/` imports either.
 
 **Models** — every default is overridable by environment variable:
 
@@ -297,61 +504,51 @@ what the frontend documentation calls for; nothing in the manifest pins an engin
 
 <br>
 
-## 📁 5. PROJECT STRUCTURE
+## 📁 6. PROJECT STRUCTURE
 
 ```text
 Advanced RAG System/
 │
-├── 📁 Backend/                         Flask + LangGraph RAG API (Python)
-│   ├── 📁 documentation/               API, architecture & pipeline docs
-│   │
-│   ├── 📁 src/                         Application source
-│   │   ├── 📁 rag_pipeline/            The 8-node LangGraph pipeline
-│   │   │   ├── 📁 core/                SSE event bus — queues, emit()
-│   │   │   ├── 📁 encoding/            LLM factory + embedding singleton
-│   │   │   ├── 📁 generation/          Planner, compressor, reasoning, reflection
-│   │   │   ├── 📁 ingestion/           Loader/chunker + KB registry
-│   │   │   ├── 📁 ranking/             Aggregator + cross-encoder reranker
-│   │   │   ├── 📁 retrieval/           vector/ · keyword/ · graph/ · web search
-│   │   │   ├── 📄 graph.py             Workflow builder — the rag_graph singleton
-│   │   │   └── 📄 state.py             RAGState TypedDict — shared pipeline state
-│   │   │
-│   │   ├── 📄 app.py                   Flask app + all 8 /api routes
-│   │   ├── 📄 config.py                Environment-driven configuration
-│   │   └── 📄 main.py                  Dev entry point — python src/main.py
-│   │
-│   ├── 📄 .env.example                 Backend env template — copy to .env
-│   ├── 📄 README.md                    Backend quickstart
-│   └── 📄 requirements.txt             Python dependencies
+├── 📁 Backend/                        Flask + LangGraph RAG API (Python)
+│   ├── 📁 Documentation/              18 pages — the backend cookbook
+│   ├── 📁 data/                       Runtime state — git-ignored, made on first run
+│   ├── 📁 src/adrag/                  The installable package; the import root
+│   ├── 📄 .env.example                Backend env template — copy to .env
+│   ├── 📄 pyproject.toml              The manifest — deps, extras, adrag-dev
+│   ├── 📄 README.md                   Backend front door
+│   └── 📄 requirements.txt            A one-line `-e .` pointer, nothing more
 │
-├── 📁 Frontend/                        Vue 3 SPA (Vue CLI / webpack)
-│   ├── 📁 documentation/               Component & state docs
-│   ├── 📁 public/                      index.html shell
-│   │
-│   ├── 📁 src/                         Application source
-│   │   ├── 📁 assets/                  main.css — global stylesheet
-│   │   ├── 📁 components/              12 components (NavBar, QueryInput…)
-│   │   ├── 📁 router/                  4 lazy-loaded routes
-│   │   ├── 📁 services/                api.js — REST calls + SSE streaming
-│   │   ├── 📁 stores/                  Pinia stores — rag.js, ui.js
-│   │   ├── 📁 views/                   Home · Chat · KnowledgeBase · Config
-│   │   ├── 📄 App.vue                  Root layout
-│   │   └── 📄 main.js                  Bootstrap — Vue + Pinia + Router
-│   │
-│   ├── 📄 .env.example                 Frontend env template — VUE_APP_API_URL
-│   ├── 📄 package.json                 Scripts + dependencies
-│   ├── 📄 postcss.config.js            PostCSS configuration
-│   ├── 📄 README.md                    Frontend quickstart
-│   ├── 📄 tailwind.config.js           Tailwind configuration
-│   └── 📄 vue.config.js                Dev server :8080 + /api proxy → :5000
+├── 📁 Frontend/                       Vue 3 SPA (Vue CLI / webpack)
+│   ├── 📁 Documentation/              8 pages — the frontend cookbook
+│   ├── 📁 design/                     Design source — brand workbench + theme lab
+│   ├── 📁 public/                     Served verbatim — build template, brand, icons
+│   ├── 📁 src/                        App source — components placed by ownership
+│   ├── 📄 .env.example                VUE_APP_API_URL — leave it unset in dev
+│   ├── 📄 package.json                Three scripts: serve · build · lint
+│   ├── 📄 README.md                   Frontend front door
+│   ├── 📄 tailwind.config.js          Two font families; reads nothing from design/
+│   └── 📄 vue.config.js               Dev server :8080 + /api proxy → :5000
 │
-├── 📁 .readme-lib/                     Doc asset library — icons & diagrams
-└── 📄 .gitignore                       Ignored paths — data, secrets, symlinks
+├── 📁 infra/                          Repo-level tooling
+│   ├── 📄 dev.py                      Runs both halves — python infra/dev.py
+│   └── 📄 smoke.py                    Drives the read-only routes in-process
+│
+├── 📁 .readme-lib/                    Doc assets — diagram sources and renders
+│
+├── 📄 .gitignore                      Ignored paths — data, secrets, build output
+└── 📄 README.md                       You are here
 ```
 
-Runtime data lives under `Backend/data/` (`uploads/` for the original files, `databases/` for the three
-stores and the knowledge-base registry). It does not exist in a fresh checkout — the backend creates it
-on first run, and it is gitignored.
+Runtime data lives under `Backend/data/` — `uploads/` for the original files, `databases/` for the
+three stores and the knowledge-base registry. It does not exist in a fresh checkout: the backend
+creates it at import time, and it is git-ignored.
+
+> [!IMPORTANT]
+> **`DATA_ROOT` is anchored to the package, not to the working directory.** `config.py` computes the
+> backend root from `__file__` and defaults every data path against it, so where you start the server
+> no longer decides where the databases land. A **relative** `DATA_ROOT` set in `.env` *is* resolved
+> against the working directory, which reintroduces the bug — use an absolute path if you set one at
+> all. This is also why `.env.example` ships its whole storage block commented out.
 
 <br>
 
@@ -359,70 +556,83 @@ on first run, and it is gitignored.
 
 <br>
 
-## 🚀 6. GETTING STARTED
+## 🚀 7. GETTING STARTED
 
 The two halves run independently. Start the backend first; the frontend dev server proxies to it.
 
-### 6.1 Prerequisites
+### 7.1 Prerequisites
 
 | Requirement | Why |
 |---|---|
-| **Python 3.10+** | The backend uses PEP 604 `X \| Y` unions evaluated at runtime |
-| **Node.js 18+** | What the frontend documentation calls for; no engine is pinned in the manifest |
-| **An OpenAI API key** *or* **a running Ollama server** | The pipeline needs at least one working LLM provider |
+| **Python 3.10+** | PEP 604 `X \| Y` unions are evaluated at runtime, with no `__future__` import |
+| **Node.js 18+** | What Vue CLI 5 expects; no engine is pinned in the manifest |
+| **An OpenAI API key** *or* **a running Ollama server** | The pipeline needs at least one working provider |
 
-Ollama, if you use it, is expected at `http://localhost:11434`. No key is needed for web search —
-DuckDuckGo is queried without one.
-
-Clone the repository first:
+Ollama, if you use it, is expected at `http://localhost:11434`. Web search needs no key.
 
 ```bash
 git clone git@github.com:Shohrab-Hossain/Advanced-RAG-System.git
 cd Advanced-RAG-System
 ```
 
-The two halves are independent — each gets its own terminal, and the backend should be running before
-the frontend is useful.
-
-### 6.2 Run the backend
+### 7.2 Run the backend
 
 ```bash
 cd Backend
 python -m venv .venv
 ```
 
-Activate the environment — `.venv\Scripts\activate` on Windows, `source .venv/bin/activate` on
-macOS and Linux — then install and configure:
+Activate the environment — `.venv\Scripts\activate` on Windows, `source .venv/bin/activate` on macOS
+and Linux — then install and configure:
 
 ```bash
-pip install -r requirements.txt
+pip install -e .
 cp .env.example .env
 ```
 
-Open `.env` and set your key (the template already uses a placeholder of this shape):
+Open `.env` and set your key:
 
 ```bash
-OPENAI_API_KEY=sk-...
+OPENAI_API_KEY=<YOUR_API_KEY>
 ```
 
 Then start it:
 
 ```bash
-python src/main.py
+adrag-dev
 ```
 
-The API listens on `0.0.0.0:5000` with threading enabled; debug mode follows `FLASK_DEBUG`. Confirm it
-is up:
+`adrag-dev` is the console script `pip` installs; `python -m adrag.main` does the same thing without it
+on `PATH`. The API listens on `0.0.0.0:5000` with threading enabled. Confirm it is up:
 
 ```bash
 curl http://localhost:5000/api/health
 ```
 
 ```json
-{ "status": "ok", "version": "1.0.0" }
+{ "status": "healthy" }
 ```
 
-### 6.3 Run the frontend
+> [!NOTE]
+> **First boot is slow — around a minute on a cold filesystem, roughly ten seconds warm.** Almost all
+> of it is `sentence-transformers` pulling in torch at import. `/api/health` answers *before* the
+> models finish loading, deliberately: it is a liveness probe, not a readiness one.
+
+Two optional dependency groups exist, neither installed by default:
+
+```bash
+pip install -e ".[faiss]"    # faiss-cpu — only for VECTOR_BACKEND=faiss
+pip install -e ".[prod]"     # gunicorn + gevent-websocket
+```
+
+For production, one worker, always — the `-w 1` and the worker class are both part of the command:
+
+```bash
+gunicorn -w 1 -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker \
+         --bind 0.0.0.0:5000 adrag.app:app
+```
+
+### 7.3 Run the frontend
 
 In a second terminal:
 
@@ -433,26 +643,52 @@ npm run serve
 ```
 
 The dev server comes up on `http://localhost:8080` and proxies `/api` to `http://localhost:5000` with
-`changeOrigin` set, so no CORS configuration is needed in development. To build a static bundle
-instead, run `npm run build`.
+`changeOrigin` set, so development needs no CORS configuration. `npm run build` produces a static
+bundle in `dist/`.
+
+> [!WARNING]
+> **`Frontend/.env.example` ships `VUE_APP_API_URL` set, and its own comment tells you to leave it
+> unset.** Copy the file verbatim and every call bypasses the dev proxy and goes cross-origin to
+> `:5000` directly. Leave the variable unset (or empty) for normal development — both clients then fall
+> back to a relative base URL, which is what the proxy is for. Set it only when the SPA is genuinely
+> served from a different origin than the API.
 
 > [!TIP]
-> Pointing the SPA at a backend somewhere other than the dev proxy is a one-line change: copy
-> `Frontend/.env.example` and set `VUE_APP_API_URL`. Left unset, the client uses an empty base URL and
-> relies on the proxy.
+> `npm run lint` runs Vue CLI's linter with **`--fix` on by default**, so invoking it to *check* the
+> code rewrites it. Use `npm run lint -- --no-fix` when you only want the report.
 
-### 6.4 Your first query
+### 7.4 Run both halves at once
+
+From the repository root:
+
+```bash
+python infra/dev.py
+```
+
+It picks free ports (walking up from 5000 and 8080), injects them into the backend's environment,
+points the frontend proxy at whichever port the backend actually got, waits on `/api/health`, and
+prefixes each child's output. Four flags:
+
+| Flag | Effect |
+|---|---|
+| `--direct` | The frontend calls the backend cross-origin instead of via the dev proxy |
+| `--no-reload` | Disables the Flask reloader, so the models load once instead of twice |
+| `--api-port <n>` | Pins the backend port instead of probing |
+| `--ui-port <n>` | Pins the frontend port instead of probing |
+
+### 7.5 Your first query
 
 1. Open `http://localhost:8080` and go to **Knowledge Base**.
-2. Upload a `.pdf`, `.txt`, `.md`, or `.docx` file — up to 50 MB. It is chunked (500 characters,
-   50-character overlap) and indexed into all three stores; the response reports how many chunks,
-   vectors, entities, and edges it produced.
-3. Go to **Chat** and ask a question about the document.
-4. Watch the pipeline tracker. Each of the eight stages reports as it starts and finishes, the
-   retrieval stage reports per-store hit counts, and the answer arrives with numbered citations.
+2. Upload a document — PDF, DOCX, Markdown, HTML, CSV, plain text, or any of 27 code extensions, up to
+   50 MB. It is chunked at 500 characters with 50 of overlap and written to all three stores; the
+   response reports the chunk, vector, entity, and edge counts.
+3. Go to **Chat** and ask a question about it.
+4. Watch the tracker. Each of the eight rows reports as its stage starts and finishes, the retrieval
+   row shows per-store hit counts, and the answer arrives with numbered citations you can expand.
 
-Uploading the same file again is safe: the backend deletes that file hash's data from all three stores
-and the registry before re-indexing, so nothing is duplicated.
+Uploading the same file again is safe. The knowledge-base id is the **MD5 of the file's contents**, and
+indexing deletes that hash's data from all three stores before writing, so a re-upload is an idempotent
+re-index rather than a duplicate — even under a different filename.
 
 <br>
 
@@ -460,18 +696,21 @@ and the registry before re-indexing, so nothing is duplicated.
 
 <br>
 
-## 💡 7. USAGE
+## 💡 8. USAGE
 
-The SPA has four routes, all lazy-loaded, using HTML5 history mode:
+The SPA has four routes, all lazily loaded, in HTML5 history mode:
 
 | Route | Page | What you do there |
 |---|---|---|
 | `/` | Home | The pitch and the entry point into the app |
 | `/chat` | Chat | Ask questions, watch the live pipeline, read cited answers |
-| `/knowledge-base` | Knowledge Base | Upload documents, review what is indexed, delete a KB or clear everything |
-| `/configuration` | Configuration | Pick the provider and model; see which providers are actually available |
+| `/knowledge-base` | Knowledge Base | Upload documents, review the index, delete one KB or clear all |
+| `/configuration` | Configuration | Pick the provider and model; see which providers are reachable |
 
-Chat history is kept in `localStorage` under the key `rag-chat-history`, capped at 50 entries.
+Chat history is kept in `localStorage` under the key `rag-chat-history`. Each entry stores a deep clone
+of the pipeline's stage snapshot, so selecting one replays the whole tracker, not just the answer. The
+**write** is capped at the newest 50 entries — the in-memory list is not, so a long session can show
+more than 50 until the next reload trims it.
 
 **Querying from the command line.** `POST /api/query` answers with an SSE stream, so pass `-N` to stop
 curl from buffering:
@@ -485,24 +724,21 @@ curl -N -X POST http://localhost:5000/api/query \
 Frames arrive as `data: <json>` blocks, each carrying a `type` and a `data` object — abridged:
 
 ```text
-data: {"type": "stage_start", "data": {"stage": "planner", "message": "…"}}
+data: {"type": "stage_start", "data": {"stage": "planner", "message": "..."}}
 
-data: {"type": "retrieval_result", "data": {"stage": "retrieval", "vector_count": 10, "bm25_count": 4, "graph_count": 3, "message": "…"}}
+data: {"type": "retrieval_result", "data": {"stage": "retrieval", "vector_count": 10, "bm25_count": 4, "graph_count": 3, "message": "..."}}
 
-data: {"type": "stage_complete", "data": {"stage": "reranker", "message": "…"}}
+data: {"type": "stage_complete", "data": {"stage": "reranker", "top_k": 5, "scores": [4.71, 1.02], "message": "..."}}
 
-data: {"type": "done", "data": {"answer": "…", "sources": [], "metadata": {}}}
+data: {"type": "done", "data": {"answer": "...", "sources": [], "metadata": {}}}
 
 data: {"type": "stream_end"}
 ```
 
-`provider` is optional — omit it and `DEFAULT_PROVIDER` applies. `model` is optional too. The full
-event vocabulary is in [§8](#-8-api).
-
-> [!NOTE]
-> The browser client does **not** use `EventSource`. Because the query has to be sent as a POST body,
-> the SPA streams the response with `fetch` plus a `ReadableStream` reader, and returns an `abort`
-> handle so an in-flight query can be cancelled.
+`provider` is optional — omit it and `DEFAULT_PROVIDER` applies. `model` is optional too, and it
+overrides the chat model for **either** provider, not just Ollama. The full event vocabulary, with
+every payload key, is in
+[`Backend/Documentation/api/query.md`](Backend/Documentation/api/query.md).
 
 <br>
 
@@ -510,55 +746,28 @@ event vocabulary is in [§8](#-8-api).
 
 <br>
 
-## 🔌 8. API
+## 🔌 9. API
 
-Eight endpoints, all under `/api`. CORS allows `FRONTEND_URL`, `http://localhost:3000`, and
-`http://localhost:8080`, for the methods `GET`, `POST`, `DELETE`, and `OPTIONS`.
+Eight routes, four blueprints, all under `/api`, none of them authenticated.
 
 | Method | Path | What it does |
 |---|---|---|
-| `POST` | `/api/query` | Runs the pipeline and streams it back as `text/event-stream`. Body `{query, provider?, model?}`. Returns `400` if `query` is missing or empty, or if `provider` is anything other than `openai` or `ollama`. |
-| `POST` | `/api/upload` | Multipart `file` upload; chunks and indexes into all three stores. Returns `{success, file_name, file_hash, chunks_indexed, kb, stats}`. `400` for a missing file field, an empty filename, or a disallowed extension; `422` when no text could be extracted; `500` on an indexing failure. |
+| `POST` | `/api/query` | Runs the pipeline and streams it back as `text/event-stream`. Body `{query, provider?, model?}`. `400` for a blank query or an unknown provider — the only HTTP error statuses in the flow. |
+| `POST` | `/api/upload` | Multipart `file` upload; chunks and indexes into all three stores. `400` for a missing file, empty name, or disallowed extension; `422` when no text could be extracted; `500` on an indexing failure. |
 | `GET` | `/api/documents` | Index counts — `{vector_count, bm25_count, graph}`. |
-| `DELETE` | `/api/clear` | Wipes all three stores and the registry **and** deletes the uploaded files from disk. Returns `{success, message}`. |
-| `GET` | `/api/knowledge-bases` | Lists the indexed knowledge bases — `{knowledge_bases: [...]}`. |
-| `DELETE` | `/api/knowledge-bases/<file_hash>` | Removes one knowledge base from all three stores and deletes its file. Returns `{success, stats}`. |
-| `GET` | `/api/providers` | `{providers: [openai, ollama], default}`. OpenAI's `available` flag reflects whether an API key is set; Ollama is probed live. The OpenAI model list offered is `gpt-4o`, `gpt-4o-mini`, `gpt-4-turbo`, `gpt-3.5-turbo`; Ollama's list comes from the server itself. |
-| `GET` | `/api/health` | `{"status": "ok", "version": "1.0.0"}`. |
+| `DELETE` | `/api/clear` | Wipes all three stores, the registry, **and** the uploaded files named by it. |
+| `GET` | `/api/knowledge-bases` | Lists the indexed knowledge bases, newest first. |
+| `DELETE` | `/api/knowledge-bases/<file_hash>` | Removes one knowledge base from all three stores. Idempotent — an unknown hash still returns `200`. |
+| `GET` | `/api/providers` | Provider availability and model lists. Probes Ollama over the network, so it can block for up to ~10 s. |
+| `GET` | `/api/health` | `{"status": "healthy"}` — one key. Liveness only; it answers while the models are still loading. |
 
-The Ollama probe is a `GET` to `{OLLAMA_BASE_URL}/api/tags` with a five-second timeout, falling back to
-a ping at the server root.
+> [!NOTE]
+> **The JSON `{"error": …}` envelope only covers errors the application raises deliberately.** No
+> error handler is registered anywhere, so `404`, `405`, `413` (an upload over 50 MB) and any unhandled
+> `500` come back as Werkzeug's **HTML** pages. A client cannot assume `response.json().error` exists.
 
-**SSE event reference.** There are **ten** wire types. Seven are emitted by pipeline nodes; `done`,
-`error`, and `stream_end` are stream-control frames produced by the Flask layer, not by any node.
-
-| `type` | Emitted by | Key `data` fields |
-|---|---|---|
-| `stage_start` | All eight nodes | `stage`, `message` — plus `attempt` and `max_attempts` on the reflection stage |
-| `stage_complete` | Seven nodes | `stage`, `message`, plus node-specific fields |
-| `stage_error` | Seven nodes | `stage`, `error` |
-| `stage_skip` | The retrieval and web-search stages | `stage`, `message` — retrieval skipped for a direct answer, or web search not needed |
-| `retrieval_result` | The retrieval stage | `stage`, `vector_count`, `bm25_count`, `graph_count`, `message` |
-| `retry` | The reflection stage | `attempt`, `max_attempts`, `reason`, `escalate_external`, `message` — **no `stage` field** |
-| `finalize` | The reflection stage | `stage`, `grounded`, `message` |
-| `done` | The Flask layer | `answer`, `sources`, `metadata` |
-| `error` | The Flask layer | `message`, `stage` — `stage` is `pipeline` for an unhandled pipeline exception, and this type is also what a stream timeout reports |
-| `stream_end` | The Flask layer | None — it is written to the stream as the literal `data: {"type": "stream_end"}` and carries no `data` object |
-
-**Stage labels are not the graph node ids.** The `stage` field takes one of eight values: `planner`,
-`retrieval`, `external_tools`, `aggregator`, `reranker`, `compressor`, `reasoning`, `reflection`. Four
-of those differ from the LangGraph node names in [§3.2](#32-the-pipeline) — `aggregate`, `rerank`,
-`compress`, and `reflect` — so match on the labels above when you consume the stream. The frontend's
-stage list uses these same eight.
-
-Full request and response bodies live in
-[`Backend/documentation/api.md`](Backend/documentation/api.md).
-
-> [!WARNING]
-> The SSE table in `Backend/documentation/api.md` has drifted from the code: it lists nine event types
-> (it is missing `error`), shows a `web_count` field on `retrieval_result` that the emitter does not
-> send, and shows a `stage` field on `retry` that is not there. The table above was enumerated from the
-> emit sites — trust it over the older one.
+Full request and response shapes, every error, and the complete SSE catalogue live in
+[`Backend/Documentation/api/`](Backend/Documentation/api/README.md).
 
 <br>
 
@@ -566,10 +775,12 @@ Full request and response bodies live in
 
 <br>
 
-## ⚙️ 9. CONFIGURATION
+## ⚙️ 10. CONFIGURATION
 
-The backend reads `Backend/.env`. Copy `Backend/.env.example` and change what you need — everything
-has a working default except the OpenAI key.
+The backend reads `Backend/.env`, found by absolute path from the package location. Copy
+`Backend/.env.example` and change what you need — everything has a working default except the OpenAI
+key. **The process environment wins over `.env`**, which is exactly how `infra/dev.py` injects the
+ports it picked.
 
 | Variable | Default | Purpose |
 |---|---|---|
@@ -577,120 +788,74 @@ has a working default except the OpenAI key.
 | `LLM_MODEL` | `gpt-4o-mini` | OpenAI chat model |
 | `OLLAMA_BASE_URL` | `http://localhost:11434` | Where the Ollama server lives |
 | `OLLAMA_MODEL` | `llama3.2` | Ollama chat model |
-| `DEFAULT_PROVIDER` | `openai` | Provider used when a request doesn't name one |
-| `VECTOR_BACKEND` | `chroma` | `chroma` or `faiss`; `faiss` requires `faiss-cpu` |
-| `PORT` | `5001` | Backend listen port — but `Backend/.env.example` sets `PORT=5000`, so a `.env` copied from it lands on 5000. See [§10](#%EF%B8%8F-10-known-gaps). |
+| `DEFAULT_PROVIDER` | `openai` | Provider used when a request does not name one |
+| `VECTOR_BACKEND` | `chroma` | `chroma` or `faiss`; `faiss` needs the `faiss` extra installed |
+| `PORT` | `5000` | Backend listen port |
+| `FRONTEND_URL` | `http://localhost:8080` | Added to the CORS origins list |
+| `FLASK_DEBUG` | `true` | Turns on **both** the auto-reloader and the interactive debugger |
 
 <details>
-<summary><b>Full reference — every environment variable and non-env constant</b></summary>
+<summary><b>Full reference — pipeline tuning, paths, and the settings you cannot set</b></summary>
 
 <br>
-
-**Providers and models**
-
-| Variable | Default |
-|---|---|
-| `OPENAI_API_KEY` | *(empty)* |
-| `LLM_MODEL` | `gpt-4o-mini` |
-| `OLLAMA_BASE_URL` | `http://localhost:11434` |
-| `OLLAMA_MODEL` | `llama3.2` |
-| `DEFAULT_PROVIDER` | `openai` |
-| `EMBEDDING_MODEL` | `all-MiniLM-L6-v2` |
-| `RERANKER_MODEL` | `cross-encoder/ms-marco-MiniLM-L-6-v2` |
 
 **Pipeline tuning**
 
 | Variable | Default | Effect |
 |---|---|---|
-| `RETRIEVAL_TOP_K` | `10` | Results requested from each store per pass |
+| `RETRIEVAL_TOP_K` | `10` | Candidates requested from each store (the graph gets `max(k // 2, 3)`) |
 | `RERANK_TOP_K` | `5` | Documents kept after cross-encoder reranking |
-| `MAX_CONTEXT_CHARS` | `4000` | Compression only runs above this total |
-| `MAX_REFLECTION_RETRIES` | `2` | Extra attempts after a failed grounding check |
-| `CHUNK_SIZE` | `500` | Characters per chunk at ingestion |
-| `CHUNK_OVERLAP` | `50` | Character overlap between adjacent chunks |
+| `MAX_CONTEXT_CHARS` | `4000` | Compression runs only above this total |
+| `MAX_REFLECTION_RETRIES` | `2` | Extra attempts after a failed grounding check — three passes maximum |
+| `EMBEDDING_MODEL` | `all-MiniLM-L6-v2` | The dense embedder |
+| `RERANKER_MODEL` | `cross-encoder/ms-marco-MiniLM-L-6-v2` | The cross-encoder |
+| `CHUNK_SIZE` | `500` | Characters per chunk at ingestion — **absent from `.env.example`** |
+| `CHUNK_OVERLAP` | `50` | Overlap between adjacent chunks — **absent from `.env.example`** |
 
-**Paths**
+**Paths** — all derived from `DATA_ROOT`, which defaults to `Backend/data` computed from the package
+location:
 
 | Variable | Default |
 |---|---|
-| `DATA_ROOT` | `./data` |
+| `DATA_ROOT` | `Backend/data` (absolute, package-anchored) |
 | `UPLOAD_FOLDER` | `<DATA_ROOT>/uploads` |
 | `DATABASE_ROOT` | `<DATA_ROOT>/databases` |
 | `CHROMA_PATH` | `<DATABASE_ROOT>/vector_db/chroma_db` |
 | `FAISS_PATH` | `<DATABASE_ROOT>/vector_db/faiss_db` |
-| `GRAPH_PATH` | `<DATABASE_ROOT>/graph_db/graph_store/graph_store.pkl` |
 | `BM25_PATH` | `<DATABASE_ROOT>/keyword_db/bm25_store/bm25_store.pkl` |
-| `KB_REGISTRY_PATH` | `<DATABASE_ROOT>/kb_registry.json` — read directly by the registry module; it appears in neither `config.py` nor `.env.example` |
+| `GRAPH_PATH` | `<DATABASE_ROOT>/graph_db/graph_store/graph_store.pkl` |
+| `KB_REGISTRY_PATH` | `<DATABASE_ROOT>/kb_registry.json` — read directly by the registry module, not through `Config` |
 
-**Server**
+The intermediate roots between `DATABASE_ROOT` and those four leaves read **no** environment variable,
+so you can move the whole tree or an individual store file, but not one retrieval kind's folder.
 
-| Variable | Default |
+**Two traps worth knowing.** `.env.example` documents the storage block with `${DATA_ROOT}`-style
+references and ships it **entirely commented out** — uncomment a child without its parent and the
+prefix expands to an empty string, so `UPLOAD_FOLDER` becomes the literal `/uploads` at the filesystem
+root. And the debug flag's variable is **`FLASK_DEBUG`**, not `DEBUG`; setting `DEBUG=false` changes
+nothing.
+
+**Not configurable by environment**
+
+| Setting | Value |
 |---|---|
-| `VECTOR_BACKEND` | `chroma` (lower-cased; `chroma` or `faiss`) |
-| `FRONTEND_URL` | `http://localhost:5173` — see [§10](#%EF%B8%8F-10-known-gaps) |
-| `FLASK_DEBUG` | `true` |
-| `PORT` | `5001` (`Backend/.env.example` sets `5000`) |
+| Maximum upload size | 50 MB, enforced by Flask itself |
+| Allowed extensions | 35, hardcoded in two places that must stay in step |
+| Web search results per query | 5 |
+| SSE per-event drain timeout | 180 seconds |
+| LLM temperature | `0`, on every call |
 
 **Frontend**
 
 | Variable | Default |
 |---|---|
-| `VUE_APP_API_URL` | `http://localhost:5000` in `Frontend/.env.example`; unset, the client falls back to an empty base URL and relies on the dev proxy |
-
-**Not configurable by environment**
-
-- **Maximum upload size:** 50 MB (`50 * 1024 * 1024`).
-- **Allowed extensions:** `pdf`, `txt`, `md`, `docx`.
-- **Web search results per query:** 5.
-- **SSE drain timeout:** 180 seconds.
-
-**Two things to know when you change a value**
-
-- `RETRIEVAL_TOP_K`, `RERANK_TOP_K`, `MAX_CONTEXT_CHARS`, and the chunking pair are **re-read from the
-  environment inside their own modules** rather than imported from the `Config` object. Setting them in
-  `.env` works; monkey-patching `Config` at runtime does not.
-- `Backend/.env.example` ships `OLLAMA_MODEL=llama3.2:latest`, while the code default is `llama3.2`.
-  Whichever you use, be consistent — they are different model tags to Ollama.
+| `VUE_APP_API_URL` | Unset in development — both clients fall back to a relative base URL and use the dev proxy. Only `VUE_APP_`-prefixed variables reach the browser, and the value is baked in **at build time**. |
 
 </details>
 
-<br>
-
----
-
-<br>
-
-## ⚠️ 10. KNOWN GAPS
-
-Honest state of the repository as it stands. None of these block local development; all of them will
-bite someone eventually.
-
-- **There is no runnable production recipe.** `Backend/src/main.py` documents a
-  `gunicorn -w 1 -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker …` command, but neither
-  `gunicorn` nor `gevent-websocket` appears in `Backend/requirements.txt`. Copy that command into a
-  fresh environment and it fails at the shell. Install both packages first, and keep the single-worker
-  constraint — the SSE stream depends on it.
-- **`npm run lint` does nothing useful.** The script is declared in `Frontend/package.json`, but
-  `@vue/cli-plugin-eslint` is absent from both the dependencies and the lockfile, and there is no
-  ESLint configuration file anywhere in the repository. The script fails when invoked.
-- **`Frontend/documentation/README.md` describes a build that isn't there.** It refers to Vite,
-  `npm run dev`, port 5173, `vite.config.js`, and an `index.html` at the package root. The real build is
-  Vue CLI / webpack, `npm run serve`, port 8080, `vue.config.js`, and `public/index.html`.
-- **The `FRONTEND_URL` default is wrong.** Both `Backend/src/config.py` and `Backend/.env.example` set
-  it to `http://localhost:5173`, a port nothing in this project listens on. CORS still works only
-  because the allowlist names `http://localhost:8080` explicitly as well.
-- **The backend's default port disagrees with every document that names it.** `Backend/src/config.py`
-  falls back to `5001`, while `Backend/.env.example`, `Backend/README.md`, and this file's own examples
-  all use `5000`. Run `python src/main.py` without a `.env` and the API binds 5001 — at which point the
-  frontend's dev proxy, which targets 5000, silently fails to reach it.
-- **The vector store is committed to git.** `Backend/src/data/databases/vector_db/chroma_db/chroma.sqlite3`
-  is tracked. `.gitignore` ignores `Backend/data/`, but `DATA_ROOT` resolves against the working
-  directory — and the app starts inside `src/` — so the real data path is `Backend/src/data/` and the
-  ignore rules never match it. Every ingest grows the repository.
-- **There is no test harness.** No test framework in either manifest, no `tests/` directory, no CI
-  configuration. Nothing in this README can be regression-checked automatically.
-- **There is no licence.** No `LICENSE` file exists, so the terms for use, modification, and
-  redistribution are formally undefined.
+The complete reference — every attribute, where it is cast, and the four ways the *"a setting is a
+`Config` attribute and an `.env.example` line"* convention is broken — is in
+[`Backend/Documentation/configuration.md`](Backend/Documentation/configuration.md).
 
 <br>
 
@@ -698,25 +863,66 @@ bite someone eventually.
 
 <br>
 
-## 📚 11. DOCUMENTATION
+## ⚠️ 11. KNOWN GAPS
 
-Each half documents itself next to its own code.
+The honest state of the repository. Two structural gaps, plus a set of security defaults that are fine
+on localhost and nowhere else.
 
-| Document | What it covers |
+- **There is no test framework.** No runner appears in `Backend/pyproject.toml` or
+  `Frontend/package.json`, there is no `tests/` directory, and there is no CI configuration.
+  `infra/smoke.py` is a **dev tool and says so itself** — it builds the app through `create_app()` and
+  drives the four read-only routes over Flask's test client, binding no port and writing nothing. It
+  proves the import chain resolves and every blueprint is registered after a refactor. It is not a
+  substitute for a harness, and **nothing here should be described as tested**.
+- **There is no `LICENSE`.** No licence file exists at the root, so the terms for use, modification,
+  and redistribution are formally undefined.
+
+**Accepted, documented, localhost-only security risks.** Each is deliberate and each is a remote
+compromise the moment the port is reachable off the machine:
+
+| Risk | Where | Effect |
+|---|---|---|
+| No authentication on any route | every route | `DELETE /api/clear` wipes the whole index in one unauthenticated request |
+| CORS allowlist ends in a literal `"*"` | the app factory | Any origin is accepted — the requesting origin is echoed back, and a cross-origin `DELETE` preflight succeeds |
+| `FLASK_DEBUG` defaults to `true` | `config.py` | An unhandled error renders Werkzeug's traceback page with the interactive console enabled |
+| Prompt input is unescaped by design | all four prompts | Query text, retrieved chunks and web results interpolate straight in — including into the critic that judges grounding |
+| The answer renders through `marked` with no sanitiser | the result view | A crafted document is a stored-XSS path to every later reader |
+
+The full treatment — the trust-boundary model, the measured wire behaviour, and an ordered checklist of
+what to close first — is in
+[`Backend/Documentation/security.md`](Backend/Documentation/security.md).
+
+<br>
+
+---
+
+<br>
+
+## 📚 12. DOCUMENTATION
+
+This README is the front door. The engineering cookbook lives beside the code it describes, one tree
+per half.
+
+| Entry point | What is behind it |
 |---|---|
-| [`Backend/README.md`](Backend/README.md) | Backend quickstart |
-| [`Backend/documentation/README.md`](Backend/documentation/README.md) | Index of the backend documentation set |
-| [`Backend/documentation/rag-pipeline.md`](Backend/documentation/rag-pipeline.md) | Every pipeline node, the state machine, the retry loop, the retrieval stores |
-| [`Backend/documentation/api.md`](Backend/documentation/api.md) | All eight HTTP endpoints with request and response shapes, plus an SSE reference — see the caveat in [§8](#-8-api) |
-| [`Backend/documentation/architecture.md`](Backend/documentation/architecture.md) | Configuration reference, persistence, ingestion, and the events/SSE system |
-| [`Frontend/README.md`](Frontend/README.md) | Frontend quickstart |
-| [`Frontend/documentation/README.md`](Frontend/documentation/README.md) | Index of the frontend documentation set — see the caveat in [§10](#%EF%B8%8F-10-known-gaps) |
-| [`Frontend/documentation/components.md`](Frontend/documentation/components.md) | Every component — props, emits, rendered output, behaviour |
-| [`Frontend/documentation/state.md`](Frontend/documentation/state.md) | Pinia stores, the API service, SSE streaming, chat-history persistence |
+| [`Backend/README.md`](Backend/README.md) | Backend front door — install, run, layout |
+| [**`Backend/Documentation/`**](Backend/Documentation/README.md) | **18 pages** — the pipeline, the three stores, ingestion, the SSE bus, the LLM layer, the HTTP API, configuration, architecture, storage, security |
+| [`Frontend/README.md`](Frontend/README.md) | Frontend front door — install, run, layout |
+| [**`Frontend/Documentation/`**](Frontend/Documentation/README.md) | **8 pages** — the three stores, the API clients, the chat page and its tracker, the knowledge-base page, the configuration page, the design system |
 
-Two files answer most configuration questions directly:
-[`Backend/.env.example`](Backend/.env.example) for the backend and
-[`Frontend/package.json`](Frontend/package.json) for the frontend's scripts and dependency versions.
+**Where to go from here, by what you want to do:**
+
+| If you want to… | Read |
+|---|---|
+| Understand the pipeline properly | [`rag-pipeline/README.md`](Backend/Documentation/rag-pipeline/README.md), then [`nodes.md`](Backend/Documentation/rag-pipeline/nodes.md) and [`state-model.md`](Backend/Documentation/rag-pipeline/state-model.md) |
+| Understand retrieval quality | [`hybrid-retrieval/README.md`](Backend/Documentation/hybrid-retrieval/README.md) and [`stores.md`](Backend/Documentation/hybrid-retrieval/stores.md) |
+| Call the API from your own client | [`api/README.md`](Backend/Documentation/api/README.md) and [`api/query.md`](Backend/Documentation/api/query.md) |
+| Follow one request across every layer | [`architecture/query-lifecycle.md`](Backend/Documentation/architecture/query-lifecycle.md) |
+| Know what is on disk and what survives a crash | [`architecture/storage-model.md`](Backend/Documentation/architecture/storage-model.md) |
+| Add a document type or change chunking | [`ingestion/README.md`](Backend/Documentation/ingestion/README.md) |
+| Work on the live tracker | [`chat/pipeline-tracker.md`](Frontend/Documentation/chat/pipeline-tracker.md) |
+| Change styling or dark mode | [`design-system/README.md`](Frontend/Documentation/design-system/README.md) |
+| Deploy this anywhere but localhost | [`security.md`](Backend/Documentation/security.md) — first |
 
 <br>
 
@@ -724,15 +930,16 @@ Two files answer most configuration questions directly:
 
 <br>
 
-## 🗺️ 12. ROADMAP
+## 🗺️ 13. ROADMAP
 
 Where this goes next, in the order it makes sense to do it.
 
 | # | Next step | What it unlocks |
 |---|---|---|
-| 1 | **Untrack the committed vector store** — `Backend/src/data/databases/vector_db/chroma_db/chroma.sqlite3` is under version control. `.gitignore` ignores `Backend/data/`, but the code resolves `DATA_ROOT` against the working directory, which is `src/`. | Stops a binary database growing in the history on every ingest, and makes the ignore rules match where data is actually written. |
-| 2 | **Make linting real** — add `@vue/cli-plugin-eslint` and an ESLint configuration. | Turns the already-declared `lint` script into a working quality gate for the frontend. |
-| 3 | **Stand up a test harness** — a framework for each half and a first suite over the pipeline nodes and the API. | Lets the pipeline's routing, retry, and fall-back paths be verified instead of reasoned about. |
-| 4 | **Write the deployment story** — pin the production server packages, then document a repeatable deploy. | Gives the project a supported way to run outside a development machine. |
+| 1 | **Stand up a test harness** — a runner for each half and a first suite over the pipeline's routing, retry, and fallback paths. | Those paths can be verified instead of reasoned about, and `infra/smoke.py` can go back to being only a smoke check. |
+| 2 | **Add a `LICENSE`.** | Makes the terms for use and contribution defined rather than absent. |
+| 3 | **Close the localhost-only security defaults** — drop the `"*"` origin, default `FLASK_DEBUG` to false, add authentication, register JSON error handlers. | The first four are the prerequisites for this running anywhere with a reachable port. |
+| 4 | **Make a retry able to change the answer** — feed the reflection critique into the next attempt, or vary temperature on a retry. | Today a non-escalating retry is deterministic and re-derives the same answer ([§3.8](#38-what-a-retry-can-and-cannot-change)). |
+| 5 | **Give ingestion a real progress channel.** | Upload is fully synchronous with no job id and no stream, so the indexing bar in the UI is an animation rather than a measurement. |
 
 <br>

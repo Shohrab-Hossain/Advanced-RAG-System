@@ -1,0 +1,27 @@
+%%{init: {'theme':'base','fontFamily':'Plus Jakarta Sans, ui-sans-serif, system-ui, sans-serif','themeCSS':'.edgeLabel, .edgeLabel p, .edgeLabel span { font-family: JetBrains Mono, ui-monospace, Consolas, monospace !important; font-size: 11px !important; color:#6B7280 !important; } .nodeLabel { font-weight:500; text-align:center; }','themeVariables':{'fontSize':'14px','primaryTextColor':'#0F172A','lineColor':'#059669','edgeLabelBackground':'#FFFFFF'},'flowchart':{'curve':'basis','nodeSpacing':34,'rankSpacing':50,'diagramPadding':8,'htmlLabels':true}}}%%
+flowchart TD
+    Q(["User query"]):::se
+    V("vector_store<br/>Chroma cosine · top_k 10<br/>score 0 to 1"):::step
+    B("bm25_store<br/>Okapi BM25 · top_k 10<br/>score unbounded"):::step
+    G("graph_store<br/>NetworkX 2-hop · top_k 5<br/>weight unbounded"):::step
+    W("external_tools<br/>DuckDuckGo · 5 results<br/>score fixed at 0.7"):::ext
+    AG("aggregate<br/>dedup by MD5 of content<br/>highest score wins"):::step
+    RK("rerank<br/>cross-encoder scores every pair<br/>one comparable scale"):::gate
+    CTX(["context<br/>5 documents"]):::ok
+    Q --> V
+    Q --> B
+    Q --> G
+    Q -.->|"only if use_external"| W
+    V --> AG
+    B --> AG
+    G --> AG
+    W -.-> AG
+    AG -->|"up to 30 candidates · 4 scales, none comparable"| RK
+    RK -->|"top 5 by rerank_score · negative = irrelevant"| CTX
+    classDef se fill:#047857,stroke:#059669,color:#FFFFFF,font-weight:600;
+    classDef step fill:#ECFDF5,stroke:#A7F3D0,color:#0F172A;
+    classDef gate fill:#DBEAFE,stroke:#3B82F6,color:#0C4A6E,font-weight:600;
+    classDef ext fill:#F1F5F9,stroke:#94A3B8,color:#334155;
+    classDef ok fill:#DCFCE7,stroke:#22C55E,color:#14532D,font-weight:600;
+    linkStyle default stroke:#059669,stroke-width:1.5px;
+    linkStyle 3,7 stroke:#94A3B8,stroke-width:1.5px,stroke-dasharray:5 3;
